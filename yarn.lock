@@ -12,6 +12,16 @@ esbuild@^0.9.3:
   resolved "https://registry.yarnpkg.com/esbuild/-/esbuild-0.9.7.tgz#ea0d639cbe4b88ec25fbed4d6ff00c8d788ef70b"
   integrity sha512-VtUf6aQ89VTmMLKrWHYG50uByMF4JQlVysb8dmg6cOgW8JnFCipmz7p+HNBl+RR3LLCuBxFGVauAe2wfnF9bLg==
 
+eventemitter3@^3.1.2:
+  version "3.1.2"
+  resolved "https://registry.yarnpkg.com/eventemitter3/-/eventemitter3-3.1.2.tgz#2d3d48f9c346698fce83a85d7d664e98535df6e7"
+  integrity sha512-tvtQIeLVHjDkJYnzf2dgVMxfuSGJeM/7UCG17TT4EumTfNtF+0nebF/4zWOIkCreAbtNqhGEboB6BWrwqNaw4Q==
+
+eventemitter3@^4.0.7:
+  version "4.0.7"
+  resolved "https://registry.yarnpkg.com/eventemitter3/-/eventemitter3-4.0.7.tgz#2de9b68f6528d5644ef5c59526a1b4a07306169f"
+  integrity sha512-8guHBZCwKnFhYdHr2ysuRWErTwhoN2X8XELRlrRwpmfeY2jjuUN4taQMsULKUVo1K4DvZl+0pgfyoysHxvmvEw==
+
 fsevents@~2.3.1:
   version "2.3.2"
   resolved "https://registry.yarnpkg.com/fsevents/-/fsevents-2.3.2.tgz#8a526f78b8fdf4623b709e0b975c52c24c02fd1a"
@@ -29,6 +39,11 @@ has@^1.0.3:
   dependencies:
     function-bind "^1.1.1"
 
+inherits@2.0.3:
+  version "2.0.3"
+  resolved "https://registry.yarnpkg.com/inherits/-/inherits-2.0.3.tgz#633c2c83e3da42a502f52466022480f4208261de"
+  integrity sha1-Yzwsg+PaQqUC9SRmAiSA9CCCYd4=
+
 is-core-module@^2.2.0:
   version "2.3.0"
   resolved "https://registry.yarnpkg.com/is-core-module/-/is-core-module-2.3.0.tgz#d341652e3408bca69c4671b79a0954a3d349f887"
@@ -36,15 +51,51 @@ is-core-module@^2.2.0:
   dependencies:
     has "^1.0.3"
 
+lokijs@^1.5.12:
+  version "1.5.12"
+  resolved "https://registry.yarnpkg.com/lokijs/-/lokijs-1.5.12.tgz#cb55b37009bdf09ee7952a6adddd555b893653a0"
+  integrity sha512-Q5ALD6JiS6xAUWCwX3taQmgwxyveCtIIuL08+ml0nHwT3k0S/GIFJN+Hd38b1qYIMaE5X++iqsqWVksz7SYW+Q==
+
 nanoid@^3.1.22:
   version "3.1.22"
   resolved "https://registry.yarnpkg.com/nanoid/-/nanoid-3.1.22.tgz#b35f8fb7d151990a8aebd5aa5015c03cf726f844"
   integrity sha512-/2ZUaJX2ANuLtTvqTlgqBQNJoQO398KyJgZloL0PZkC0dpysjncRUPsFe3DUPzz/y3h+u7C46np8RMuvF3jsSQ==
 
+papaparse@^5.3.0:
+  version "5.3.0"
+  resolved "https://registry.yarnpkg.com/papaparse/-/papaparse-5.3.0.tgz#ab1702feb96e79ab4309652f36db9536563ad05a"
+  integrity sha512-Lb7jN/4bTpiuGPrYy4tkKoUS8sTki8zacB5ke1p5zolhcSE4TlWgrlsxjrDTbG/dFVh07ck7X36hUf/b5V68pg==
+
 path-parse@^1.0.6:
   version "1.0.6"
   resolved "https://registry.yarnpkg.com/path-parse/-/path-parse-1.0.6.tgz#d62dbb5679405d72c4737ec58600e9ddcf06d24c"
   integrity sha512-GSmOT2EbHrINBf9SR7CDELwlJ8AENk3Qn7OikK4nFYAu3Ote2+JYNVvkpAEQm3/TLNEJFD/xZJjzyxg3KBWOzw==
+
+path@^0.12.7:
+  version "0.12.7"
+  resolved "https://registry.yarnpkg.com/path/-/path-0.12.7.tgz#d4dc2a506c4ce2197eb481ebfcd5b36c0140b10f"
+  integrity sha1-1NwqUGxM4hl+tIHr/NWzbAFAsQ8=
+  dependencies:
+    process "^0.11.1"
+    util "^0.10.3"
+
+phaser3-rex-plugins@^1.1.46:
+  version "1.1.46"
+  resolved "https://registry.yarnpkg.com/phaser3-rex-plugins/-/phaser3-rex-plugins-1.1.46.tgz#c53142461646a3c986e3af7d23b5f272e6a1f8d6"
+  integrity sha512-v2pQQFHX+ym6FwHNHyOxisoUa6iuAN3NxHjb8JthwLRPEnb0++EzDJq1Fdu2dduqx5Bh0K0B9ZvIk1ESSA8b0A==
+  dependencies:
+    eventemitter3 "^3.1.2"
+    lokijs "^1.5.12"
+    papaparse "^5.3.0"
+    webfontloader "^1.6.28"
+
+phaser@^3.54.0:
+  version "3.54.0"
+  resolved "https://registry.yarnpkg.com/phaser/-/phaser-3.54.0.tgz#46b191e46059aab2a9a57f78525c60b595767eee"
+  integrity sha512-/1XVI6J2siS0OGwJez7vLbRjars1zb//EvJdYMVyd3wNTUf5DHrvYUj1f6TsEISr4vjnbrNtS66QIuPbGU8x6A==
+  dependencies:
+    eventemitter3 "^4.0.7"
+    path "^0.12.7"
 
 postcss@^8.2.1:
   version "8.2.13"
@@ -54,6 +105,11 @@ postcss@^8.2.1:
     colorette "^1.2.2"
     nanoid "^3.1.22"
     source-map "^0.6.1"
+
+process@^0.11.1:
+  version "0.11.10"
+  resolved "https://registry.yarnpkg.com/process/-/process-0.11.10.tgz#7332300e840161bda3e69a1d1d91a7d4bc16f182"
+  integrity sha1-czIwDoQBYb2j5podHZGn1LwW8YI=
 
 resolve@^1.19.0:
   version "1.20.0"
@@ -75,6 +131,13 @@ source-map@^0.6.1:
   resolved "https://registry.yarnpkg.com/source-map/-/source-map-0.6.1.tgz#74722af32e9614e9c287a8d0bbde48b5e2f1a263"
   integrity sha512-UjgapumWlbMhkBgzT7Ykc5YXUT46F0iKu8SGXq0bcwP5dz/h0Plj6enJqjz1Zbq2l5WaqYnrVbwWOWMyF3F47g==
 
+util@^0.10.3:
+  version "0.10.4"
+  resolved "https://registry.yarnpkg.com/util/-/util-0.10.4.tgz#3aa0125bfe668a4672de58857d3ace27ecb76901"
+  integrity sha512-0Pm9hTQ3se5ll1XihRic3FDIku70C+iHUdT/W926rSgHV5QgXsYbKZN8MSC3tJtSkhuROzvsQjAaFENRXr+19A==
+  dependencies:
+    inherits "2.0.3"
+
 vite@^2.2.3:
   version "2.2.4"
   resolved "https://registry.yarnpkg.com/vite/-/vite-2.2.4.tgz#8f9cc85aacab04c850085894b086c8717f12ed16"
@@ -86,3 +149,8 @@ vite@^2.2.3:
     rollup "^2.38.5"
   optionalDependencies:
     fsevents "~2.3.1"
+
+webfontloader@^1.6.28:
+  version "1.6.28"
+  resolved "https://registry.yarnpkg.com/webfontloader/-/webfontloader-1.6.28.tgz#db786129253cb6e8eae54c2fb05f870af6675bae"
+  integrity sha1-23hhKSU8tujq5UwvsF+HCvZnW64=
