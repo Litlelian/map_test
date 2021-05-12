@@ -31,7 +31,7 @@ class Demo extends Phaser.Scene {
     })
     this.player.anims.play('idle',true)
     var rabbit = this.rexBoard.add.moveTo(p, {
-      speed: 40
+      speed: 100
     })
     var rabbit_path = this.rexBoard.add.pathFinder(p,{
       occupiedTest: true
@@ -40,6 +40,7 @@ class Demo extends Phaser.Scene {
     var print = this.add.text(0, 0, 'Click any tile')
     var staggeraxis = 'x'
     var staggerindex = 'odd'
+    //const self = this
     var board = this.rexBoard.add.board({
       grid: {
         gridType: 'hexagonGrid',
@@ -50,28 +51,37 @@ class Demo extends Phaser.Scene {
         staggerindex: staggerindex
       }
     })
-    .setInteractive()
-    .on('tiledown', function (pointer, tileXY){
-      board.addChess(p, 9, 4, 1, true)
+    console.log(board)
+    
+    board.setInteractive()
+    board.on('tiledown', function(pointer, tileXY){
+      console.log(this)
       print.text = `${tileXY.x},${tileXY.y}`
       //board.moveChess(p, tileXY.x, tileXY.y, 0, true)
       var tileXYArray = rabbit_path.findPath(tileXY)
-      for (var i = 0, cnt = tileXYArray.length; i < cnt; i++)
-      {
-        console.log(tileXYArray[i])
-        p.anims.play('run',true)
-        rabbit.moveTo(tileXYArray[i].x, tileXYArray[i].y).on('complete', function(){
-          p.anims.play('idle',true)
-        })
-      }
+      p.anims.play('run',true)
+      //movealong(rabbit, tileXYArray, 0)
+      ;(async function (){
+        for(let i = 0; i < tileXYArray.length; i++)
+        {
+          console.log(i)
+          await new Promise(resolve =>
+              {
+                rabbit.moveTo(tileXYArray[i].x, tileXYArray[i].y).on('complete', resolve)}
+            )
+        }
+        p.anims.play('idle',true)
+      })()
     })
+
     var tileXYArray = board.fit(this.rexBoard.hexagonMap.hexagon(board, 6));
     var graphics = this.add.graphics({
       lineStyle: {
         width: 3,
         color: 0xffffff,
         alpha: 1
-      } })
+      } 
+    })  
     var tileXY, worldXY
     for (var i in tileXYArray) {
       tileXY = tileXYArray[i]
@@ -81,8 +91,9 @@ class Demo extends Phaser.Scene {
         this.add.text(worldXY.x, worldXY.y, `${tileXY.x},${tileXY.y}`).setOrigin(0.5)
       }
     }
+    board.addChess(p, 9, 4, 1, true)
   }
-  update(){
+  /* update(){
     var p = this.player
     document.onkeydown = function(e){
       if(e.keyCode == 37)
@@ -127,7 +138,7 @@ class Demo extends Phaser.Scene {
         p.anims.play('idle',true)
       }
     }
-  }
+  }*/
 }
 
 var config = {
