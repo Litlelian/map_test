@@ -1,46 +1,54 @@
 import Phaser from 'phaser'
 import BoardPlugin from 'phaser3-rex-plugins/plugins/board-plugin.js'
 
-import bunny1 from './assets/bunny1.png'
-import bunny2 from './assets/bunny2.png'
-
 const AreaColor = 0xFF9E00
 
-class Beast extends Phaser.Scene {
-    constructor() {
-        //-----?
-    }
-
-    preload() {
-        this.load.spritesheet('BunnyIdle',bunny1,{frameWidth:34,frameHeight:44})
-        this.load.spritesheet('BunnyRun',bunny2,{frameWidth:34,frameHeight:44})
-    }
-
-    create() {
-        this.player = this.add.sprite(0,0,'bunny')
-        this.player.setDepth(2)
-        this.anims.create({
-            key: 'idle',
-            frames: this.anims.generateFrameNumbers('BunnyIdle',{start:0 , end: 7}),
-            frameRate: 10,
-            repeat: -1
-        })
-        this.anims.create({
-            key: 'run',
-            frames: this.anims.generateFrameNumbers('BunnyRun',{start:0 , end: 11}),
-            frameRate: 10,
-            repeat: -1
-        })
-
-        // add behavior     // question
-        var BunnyMove = this.rexBoard.add.moveTo(this.player, {
-            speed: 100
-        })
-        var BunnyPath = this.rexBoard.add.pathFinder(this.player,{
+class Beast extends Phaser.GameObjects.TileSprite {
+    constructor(scene, tileX, tileY, width, height, texture, frame) {
+        super(scene, tileX, tileY, width, height, texture, frame)
+        scene.add.existing(this)
+        this.setDepth(2)
+        this.MoveBehavior = scene.rexBoard.add.moveTo(this, {
+            speed: 100,
             occupiedTest: true
         })
-        BunnyPath.setChess(this.player)
-        
+        /*this.PathFindBehavior = scene.rexBoard.add.pathFinder(this ,{
+            occupiedTest: true
+        })*/
+
+        // private members
+        this._life = 2
+        this._attack = 1
+        this._speed = 1
+    }
+    
+    // function to use
+    act(occupiedChess) {
+        // judge itself live or not
+        if(this._life < 0)
+        {
+            // add Voice Of Death here
+            this.destroy()
+        }
+        // attack
+        occupiedChess._life = occupiedChess._life - this._attack
+    }
+
+    moveforward(AllyOrEnermy) {
+        if(AllyOrEnermy === 0) // ally
+        {
+            this.MoveBehavior.moveToward(0)  // move to right
+            .on('occupy', function(occupiedChess, this){
+                act(occupiedChess)
+            })
+        }
+        if(AllyOrEnermy === 1) // enermy
+        {
+            this.MoveBehavior.moveToward(3)  // move to left
+            .on('occupy', function(occupiedChess, this){
+                act(occupiedChess)
+            })
+        }
     }
 }
 
