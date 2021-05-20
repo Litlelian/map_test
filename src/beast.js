@@ -3,9 +3,9 @@ import BoardPlugin from 'phaser3-rex-plugins/plugins/board-plugin.js'
 
 const AreaColor = 0xFF9E00
 
-class Beast extends Phaser.GameObjects.TileSprite {
-    constructor(scene, tileX, tileY, width, height, texture, frame) {
-        super(scene, tileX, tileY, width, height, texture, frame)
+export default class Beast extends Phaser.GameObjects.Sprite {
+    constructor(scene, tileX, tileY, texture, frame) {
+        super(scene, tileX, tileY, texture, frame)
         scene.add.existing(this)
         this.setDepth(2)
         this.MoveBehavior = scene.rexBoard.add.moveTo(this, {
@@ -38,14 +38,14 @@ class Beast extends Phaser.GameObjects.TileSprite {
         if(AllyOrEnermy === 0) // ally
         {
             this.MoveBehavior.moveToward(0)  // move to right
-            .on('occupy', function(occupiedChess, this){
+            .on('occupy', function(occupiedChess, thischess){
                 act(occupiedChess)
             })
         }
         if(AllyOrEnermy === 1) // enermy
         {
             this.MoveBehavior.moveToward(3)  // move to left
-            .on('occupy', function(occupiedChess, this){
+            .on('occupy', function(occupiedChess, thischess){
                 act(occupiedChess)
             })
         }
