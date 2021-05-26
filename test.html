@@ -8,6 +8,8 @@
 <footer><div id=phaser-example></div></footer>
 <script type="module">
 import Beast from './src/beast.js'
+import DragPlugin from 'phaser3-rex-plugins/plugins/drag-plugin.js'
+
 class Demo extends Phaser.Scene {
     constructor() {
         super({
@@ -17,6 +19,7 @@ class Demo extends Phaser.Scene {
 
     preload() {
         this.load.spritesheet('bunny','./src/assets/bunny1.png',{frameWidth:34,frameHeight:44})
+        this.load.spritesheet('bunny_run','./src/assets/bunny2.png',{frameWidth:34,frameHeight:44})
     }
 
     create() {
@@ -30,10 +33,7 @@ class Demo extends Phaser.Scene {
         }
         var board = new Board(this, config);
 
-        var beast = new Beast(this, 300, 300, "bunny")
-
-        console.log(board)
-        board.Board.addchess(beast, 5, 5, 1, true)
+        var beast = new Beast(board, this, 300, 300)
 
         // add chess
         //this.chessA = new ChessA(this.board);
@@ -206,7 +206,13 @@ var config = {
               key: 'rexBoard',
               plugin: rexboardplugin,
               mapping: 'rexBoard'
-          }]
+          }],
+          global:[
+        {
+            key: 'rexDrag',
+            plugin: DragPlugin,
+            start: true
+        }]
     }
 };
 
