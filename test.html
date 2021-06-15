@@ -20,6 +20,7 @@ class Demo extends Phaser.Scene {
     preload() {
         this.load.spritesheet('bunny','./src/assets/bunny1.png',{frameWidth:34,frameHeight:60})
         this.load.spritesheet('bunny_run','./src/assets/bunny2.png',{frameWidth:34,frameHeight:60})
+        this.load.spritesheet('bunny_hit','./src/assets/bunny3.png',{frameWidth:34,frameHeight:60})
     }
 
     create() {
@@ -31,9 +32,14 @@ class Demo extends Phaser.Scene {
             height: 8,
             // wrap: true
         }
-        var board = new Board(this, config);
+        this.board = new Board(this, config);
 
-        var beast = new Beast(board, 1, this, 500, 500) //how to add many chess       
+        // create list to store chess
+        this.allyChess = []
+        this.enermyChess = []
+
+        this.allyChess.push(new Beast(this.board, 1, this, 500, 500)) //how to add many chess  
+        this.enermyChess.push(new Beast(this.board, -1, this, 300, 500))     
 
         // add chess
         //this.chessA = new ChessA(this.board);
@@ -44,6 +50,19 @@ class Demo extends Phaser.Scene {
         //}
 
         //this.chessA.showMoveableArea();
+    }
+
+    update(){
+        if(this.allyChess.length && this.allyChess[0]._xin === -1)
+        {
+            this.allyChess[0].killItself(this.board)
+            this.allyChess.pop()
+        }
+        if(this.enermyChess.length && this.enermyChess[0]._xin === 8)
+        {
+            this.enermyChess[0].killItself(this.board)
+            this.enermyChess.pop()
+        }
     }
 }
 

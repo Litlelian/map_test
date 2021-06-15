@@ -8,17 +8,22 @@ export default class Beast extends Phaser.GameObjects.Sprite {
         super(scene, tileX, tileY, texture, frame)
 
         // private members
+        this._xin = -2
+        this._yin = -2
         this._life = 2
         this._attack = 1
         this._speed = 3000
         this._moving = true
-        this.identity = identity
+        this._identity = identity
         this.timer
+
+        console.log(this)
 
         scene.add.existing(this)
         this.setDepth(2)
+        this.scaleX = this._identity
         this.MoveBehavior = scene.rexBoard.add.moveTo(this, {
-            speed: 40,
+            speed: 50,
             occupiedTest: true
         })
         this.drag = scene.plugins.get('rexDrag').add(this)
@@ -44,7 +49,14 @@ export default class Beast extends Phaser.GameObjects.Sprite {
             repeat: -1
         })
 
-        this.keepMoving(board)
+        scene.anims.create({
+            key: 'hit',
+            frames: this.anims.generateFrameNumbers('bunny_hit',{start:0 , end: 4}),
+            frameRate: 10,
+            repeat: -1
+        })
+
+        this.anims.play('idle',true) 
 
         this.on('drag', function(pointer, dragX, dragY){ 
             this.x = dragX
@@ -56,6 +68,8 @@ export default class Beast extends Phaser.GameObjects.Sprite {
             var tileXY = board.worldXYToTileXY(this.x, this.y)
             if(tileXY.x>=0&&tileXY.x<=7&&tileXY.y>=0&&tileXY.y<=7)
             {
+                this._xin = tileXY.x
+                this._yin = tileXY.y
                 this.MoveBehavior.stop()
                 clearInterval(this.timer)
                 this.keepMoving(board)
@@ -73,42 +87,52 @@ export default class Beast extends Phaser.GameObjects.Sprite {
         // use interval
         this.timer = setInterval(() => {
             this.anims.play('run',true) 
-            this.moveforward(board, this.identity)
-        }, this._speed);
+            this.moveforward(board, this._identity)
+            this._xin -= this._identity
+            this.MoveBehavior.on('complete', function(moveTo, gameObject){
+                this.anims.play('idle',true) 
+            },this)
+        }, this._speed)
+    }
+
+    killItself(board) {
+        clearInterval(this.timer)
+        board.removeChess(this, null, null, null, true)
     }
 
     act(occupiedChess) {
         // judge itself live or not
-        if(this._life < 0)
+        if(this._life <= 0)
         {
             // add Voice Of Death here
-            this.destroy() // ??????
+            this.killItself() // ??????
         }
         else
         {
+            occupiedChess.anims.play('hit',true)
             occupiedChess._life = occupiedChess._life - this._attack
         }
     }
 
     moveforward(board, AllyOrEnermy) {
         var tileXYZ = board.chessToTileXYZ(this)
-        if(AllyOrEnermy === 0) // ally
+        if(AllyOrEnermy === -1) // ally
         {
             this.MoveBehavior.moveToward(0)  // move to right
-            .on('occupy', function(occupiedChess, thischess){
+            this.MoveBehavior.on('occupy', function(occupiedChess, thischess){
                 this._moving = false
                 console.log(occupiedChess)
-                act(occupiedChess)
-            })
+                this.act(occupiedChess)
+            },this)
         }
         if(AllyOrEnermy === 1) // enermy
         {
             this.MoveBehavior.moveToward(3)  // move to left
-            .on('occupy', function(occupiedChess, thischess){
+            this.MoveBehavior.on('occupy', function(occupiedChess, thischess){
                 this._moving = false
                 console.log(occupiedChess)
-                act(occupiedChess)
-            })
+                this.act(occupiedChess)
+            },this)
         }
     }
 }
