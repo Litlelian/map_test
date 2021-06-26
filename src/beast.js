@@ -26,6 +26,11 @@ export default class Beast extends Phaser.GameObjects.Sprite {
             speed: 50,
             occupiedTest: true
         })
+        .on('occupy', function(occupiedChess, thischess){
+            this._moving = false
+            console.log(occupiedChess)
+            this.act(occupiedChess)
+        },this)
         this.drag = scene.plugins.get('rexDrag').add(this)
         /*this.PathFindBehavior = scene.rexBoard.add.pathFinder(this ,{
             occupiedTest: true
@@ -66,18 +71,18 @@ export default class Beast extends Phaser.GameObjects.Sprite {
 
         this.on('dragend', function(pointer, dragX, dragY){ 
             var tileXY = board.worldXYToTileXY(this.x, this.y)
-            if(tileXY.x>=0&&tileXY.x<=7&&tileXY.y>=0&&tileXY.y<=7)
+            clearInterval(this.timer)
+            this.anims.play('idle',true)
+            if(tileXY.x>=0&&tileXY.x<=8&&tileXY.y>=0&&tileXY.y<=6)
             {
                 this._xin = tileXY.x
                 this._yin = tileXY.y
                 this.MoveBehavior.stop()
-                clearInterval(this.timer)
-                this.keepMoving(board)
-                this.anims.play('idle',true)
                 board.addChess(this, tileXY.x, tileXY.y, 1, true)
+                this.keepMoving(board)
                 this.drag.setEnable(false)
             }
-            
+            console.log(this)
         })
 
     }
@@ -119,20 +124,20 @@ export default class Beast extends Phaser.GameObjects.Sprite {
         if(AllyOrEnermy === -1) // ally
         {
             this.MoveBehavior.moveToward(0)  // move to right
-            this.MoveBehavior.on('occupy', function(occupiedChess, thischess){
-                this._moving = false
-                console.log(occupiedChess)
-                this.act(occupiedChess)
-            },this)
+            // this.MoveBehavior.on('occupy', function(occupiedChess, thischess){
+            //     this._moving = false
+            //     console.log(occupiedChess)
+            //     this.act(occupiedChess)
+            // },this)
         }
         if(AllyOrEnermy === 1) // enermy
         {
             this.MoveBehavior.moveToward(3)  // move to left
-            this.MoveBehavior.on('occupy', function(occupiedChess, thischess){
-                this._moving = false
-                console.log(occupiedChess)
-                this.act(occupiedChess)
-            },this)
+            // this.MoveBehavior.on('occupy', function(occupiedChess, thischess){
+            //     this._moving = false
+            //     console.log(occupiedChess)
+            //     this.act(occupiedChess)
+            // },this)
         }
     }
 }

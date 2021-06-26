@@ -28,11 +28,17 @@ class Demo extends Phaser.Scene {
         var config = {
             grid: getHexagonGrid(this),
             // grid: getQuadGrid(this),
-            width: 8,
-            height: 8,
+            width: 9,
+            height: 7,
             // wrap: true
         }
         this.board = new Board(this, config);
+
+        for(var i = 1; i < 6; i=i+2)
+        {
+            new Blocker(this.board, {x:0,y:i})
+            new Blocker(this.board, {x:8,y:i})
+        }
 
         // create list to store chess
         this.allyChess = []
@@ -58,7 +64,7 @@ class Demo extends Phaser.Scene {
             this.allyChess[0].killItself(this.board)
             this.allyChess.pop()
         }
-        if(this.enermyChess.length && this.enermyChess[0]._xin === 8)
+        if(this.enermyChess.length && this.enermyChess[0]._xin === 9)
         {
             this.enermyChess[0].killItself(this.board)
             this.enermyChess.pop()
