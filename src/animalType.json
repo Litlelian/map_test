@@ -1,0 +1,10 @@
+{
+    "day_animal": 
+    {
+        "rabbit" : "000000"
+    },
+    "night_animal":
+    {
+        "bat" : "000001"
+    }
+}

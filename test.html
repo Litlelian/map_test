@@ -8,6 +8,7 @@
 <footer><div id=phaser-example></div></footer>
 <script type="module">
 import Beast from './src/beast.js'
+import {BeastBoard} from './src/beast.js'
 import DragPlugin from 'phaser3-rex-plugins/plugins/drag-plugin.js'
 
 class Demo extends Phaser.Scene {
@@ -41,11 +42,14 @@ class Demo extends Phaser.Scene {
         }
 
         // create list to store chess
+        this.allyBase = []
         this.allyChess = []
         this.enermyChess = []
 
-        this.allyChess.push(new Beast(this.board, 1, this, 500, 500)) //how to add many chess  
-        this.enermyChess.push(new Beast(this.board, -1, this, 300, 500))     
+        // create
+        this.allyBase.push(new BeastBoard(this.board, "000000", 1, this, {x:500, y:500}))
+        // this.allyChess.push(new Beast(this.board, {x:3, y:3}, "000000", 1)) //how to add many chess  
+        // this.enermyChess.push(new Beast(this.board, {x:3, y:5}, "000000", -1))     
 
         // add chess
         //this.chessA = new ChessA(this.board);
@@ -59,6 +63,8 @@ class Demo extends Phaser.Scene {
     }
 
     update(){
+
+        // kill
         if(this.allyChess.length && this.allyChess[0]._xin === -1)
         {
             this.allyChess[0].killItself(this.board)
