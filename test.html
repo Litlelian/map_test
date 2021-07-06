@@ -37,17 +37,19 @@ class Demo extends Phaser.Scene {
 
         for(var i = 1; i < 6; i=i+2)
         {
-            new Blocker(this.board, {x:0,y:i})
-            new Blocker(this.board, {x:8,y:i})
+            new Blocker(this.board, {x:0,y:i}, this.board)
+            new Blocker(this.board, {x:8,y:i}, this.board)
         }
 
         // create list to store chess
         this.allyBase = []
+        this.enermyBase = []
         this.allyChess = []
         this.enermyChess = []
 
         // create
         this.allyBase.push(new BeastBoard(this.board, "000000", 1, this, {x:500, y:500}))
+        this.enermyBase.push(new BeastBoard(this.board, "000000", -1, this, {x:300, y:500}))
         // this.allyChess.push(new Beast(this.board, {x:3, y:3}, "000000", 1)) //how to add many chess  
         // this.enermyChess.push(new Beast(this.board, {x:3, y:5}, "000000", -1))     
 
@@ -124,14 +126,20 @@ class Board extends RexPlugins.Board.Board {
 }
 
 class Blocker extends RexPlugins.Board.Shape {
-    constructor(board, tileXY) {
+    constructor(board, tileXY, parentClass) {
         var scene = board.scene;
         if (tileXY === undefined) {
             tileXY = board.getRandomEmptyTileXY(0);
         }
         // Shape(board, tileX, tileY, tileZ, fillColor, fillAlpha, addToBoard)
         super(board, tileXY.x, tileXY.y, 0, COLOR_DARK);
+        this._parent = parentClass
         scene.add.existing(this);
+    }
+
+    killItself(board)
+    {
+        board.removeChess(this, null, null, null, true)
     }
 }
 

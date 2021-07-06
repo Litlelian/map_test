@@ -10,9 +10,11 @@ export default class Beast extends RexPlugins.Board.Shape {
         this.setScale(0.95)
 
         // private members
-        this.timer
+        this._timer
+        this._parent = this
         this._sprite
         this._blockArea = [this]
+        this._enermy = []
 
         // add behavior
         this.MoveBehavior = scene.rexBoard.add.moveTo(this, {
@@ -26,7 +28,7 @@ export default class Beast extends RexPlugins.Board.Shape {
                 this._sprite = new Rabbit(board, identity, scene, tileXY)
                 for(var i=0; i<this._sprite._area.length; i++)
                 {
-                    this._blockArea.push(new Block(board, tileXY.x + identity*this._sprite._area[i].x, tileXY.y + identity*this._sprite._area[i].y), this._sprite)
+                    this._blockArea.push(new Block(board, tileXY.x + identity*this._sprite._area[i].x, tileXY.y + this._sprite._area[i].y), this)
                     this._blockArea.pop()
                 }
                 break
@@ -48,10 +50,9 @@ export default class Beast extends RexPlugins.Board.Shape {
     // function to use
     keepMoving(board) {
         // use interval
-        this.timer = setInterval(() => {
+        this._timer = setInterval(() => {
             this._sprite.anims.play('run',true) 
             this.moveforward(board, this._sprite._identity)
-            //this._sprite._xin -= this._sprite._identity
             this._sprite.MoveBehavior.on('complete', function(moveTo, gameObject){
                 this._sprite.anims.play('idle',true) 
             },this)
@@ -60,41 +61,79 @@ export default class Beast extends RexPlugins.Board.Shape {
 
     moveforward(board, AllyOrEnermy) {
         //var tileXYZ = board.chessToTileXYZ(this)
-        if(AllyOrEnermy === -1) // ally
+        if(AllyOrEnermy === -1) // enermy
         {// move to right
-            for(var i = 0; i < this._blockArea.length; i++)
+            for(let i = 0; i < this._blockArea.length; i++)
             {
-                this._blockArea[i].MoveBehavior.moveToward(0)
                 this._blockArea[i].MoveBehavior.on('occupy', function(occupiedChess, thischess){
-                    clearInterval(this.timer)
-                    for(var i = 0; i < this._blockArea.length; i++)
+                    clearInterval(this._timer)
+                    for(let i = 0; i < this._blockArea.length; i++)
                     {
                         this._blockArea[i].MoveBehavior.setEnable(false)
                     }
                     this._sprite.MoveBehavior.setEnable(false)
                     this._sprite.anims.play('idle',true) 
+                    this._enermy.push(occupiedChess._parent)
                     console.log(occupiedChess)
+                    for(let i = 0; i < this._enermy.length-1; i++)
+                    {
+                        if(occupiedChess._parent === this._enermy[i]._parent)
+                        {
+                            this._enermy.pop()
+                            break
+                        }
+                    }
                 },this)
+                this._blockArea[i].MoveBehavior.moveToward(0)
+                console.log(this._enermy)
             }
             this._sprite.MoveBehavior.moveToward(0)
         }
-        if(AllyOrEnermy === 1) // enermy
+        if(AllyOrEnermy === 1) // ally
         {// move to left
-            for(var i = 0; i < this._blockArea.length; i++)
+            for(let i = 0; i < this._blockArea.length; i++)
             {
-                this._blockArea[i].MoveBehavior.moveToward(3)
                 this._blockArea[i].MoveBehavior.on('occupy', function(occupiedChess, thischess){
-                    clearInterval(this.timer)
-                    for(var i = 0; i < this._blockArea.length; i++)
+                    clearInterval(this._timer)
+                    for(let i = 0; i < this._blockArea.length; i++)
                     {
                         this._blockArea[i].MoveBehavior.setEnable(false)
                     }
                     this._sprite.MoveBehavior.setEnable(false)
                     this._sprite.anims.play('idle',true) 
-                    console.log(occupiedChess)
+                    this._enermy.push(occupiedChess)
+                    for(let i = 0; i < this._enermy.length-1; i++)
+                    {
+                        if(occupiedChess._parent === this._enermy[i]._parent)
+                        {
+                            this._enermy.pop()
+                            break
+                        }
+                    }
                 },this)
+                this._blockArea[i].MoveBehavior.moveToward(3)
             }
             this._sprite.MoveBehavior.moveToward(3)
+            for(let i = 0; i < this._enermy.length; i++)
+            {
+                if(this._enermy[i]._parent === board)
+                {
+                    this._enermy[i].killItself(board)
+                }
+                else
+                {
+                    this._sprite.act(board, this._enermy[i])
+                }
+            }
+        }
+    }
+
+    killItself(board) {
+        clearInterval(this.timer)
+        this._sprite.killItself(board)
+        for(var i=0; i<this._blockArea.length; i++)
+        {
+            board.removeChess(this._blockArea[i], null, null, null, true)
         }
     }
 }
@@ -154,8 +193,6 @@ class Rabbit extends Phaser.GameObjects.Sprite {
         super(scene, tileXY.x, tileXY.y, texture, frame)
 
         // private members
-        this._xin = -2
-        this._yin = -2
         this._life = 2
         this._attack = 1
         this._speed = 3000
@@ -174,14 +211,6 @@ class Rabbit extends Phaser.GameObjects.Sprite {
             speed: 50,
             occupiedTest: true
         })
-        //this.drag = scene.plugins.get('rexDrag').add(this)
-        /*this.PathFindBehavior = scene.rexBoard.add.pathFinder(this ,{
-            occupiedTest: true
-        })*/
-
-        // create anime
-        
-        //board.addChess(this, 5, 5, 1, true)
 
         scene.anims.create({
             key: 'idle',
@@ -209,56 +238,22 @@ class Rabbit extends Phaser.GameObjects.Sprite {
     
     // function to use
 
-    keepMoving(board) {
-        // use interval
-        this.timer = setInterval(() => {
-            this.anims.play('run',true) 
-            this.moveforward(board, this._identity)
-            this._xin -= this._identity
-            this.MoveBehavior.on('complete', function(moveTo, gameObject){
-                this.anims.play('idle',true) 
-            },this)
-        }, this._speed)
-    }
-
     killItself(board) {
         clearInterval(this.timer)
         board.removeChess(this, null, null, null, true)
     }
 
-    act(occupiedChess) {
+    act(board, occupiedChess) {
         // judge itself live or not
         if(this._life <= 0)
         {
             // add Voice Of Death here
-            this.killItself() // ??????
+            this.killItself(board) 
         }
         else
         {
-            occupiedChess.anims.play('hit',true)
-            occupiedChess._life = occupiedChess._life - this._attack
-        }
-    }
-
-    moveforward(board, AllyOrEnermy) {
-        //var tileXYZ = board.chessToTileXYZ(this)
-        if(AllyOrEnermy === -1) // ally
-        {
-            this.MoveBehavior.moveToward(0)  // move to right
-            this.MoveBehavior.on('occupy', function(occupiedChess, thischess){
-                this.MoveBehavior.setEnable(false)
-                this.anims.play('idle',true) 
-                console.log(occupiedChess)
-            },this)
-        }
-        if(AllyOrEnermy === 1) // enermy
-        {
-            this.MoveBehavior.moveToward(3)  // move to left
-            this.MoveBehavior.on('occupy', function(occupiedChess, thischess){
-                this.MoveBehavior.setEnable(false)
-                this.anims.play('idle',true) 
-                console.log(occupiedChess)
-            },this)
+            occupiedChess._sprite.anims.play('hit',true)
+            occupiedChess._sprite._life = occupiedChess._sprite._life - this._attack
         }
     }
 }
