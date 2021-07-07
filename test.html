@@ -1,14 +1,12 @@
 <!DOCTYPE html>
 <html>
-<head>
-	<script src="https://cdn.jsdelivr.net/npm/phaser@3.15.1/dist/phaser-arcade-physics.min.js"></script>
-	<script src="https://rawgit.com/rexrainbow/phaser3-rex-notes/master/dist/rexboardplugin.min.js"></script>
-</head>
 <body>
 <footer><div id=phaser-example></div></footer>
 <script type="module">
+import Phaser from 'phaser'
+import BoardPlugin from 'phaser3-rex-plugins/plugins/board-plugin.js'
 import Beast from './src/beast.js'
-import {BeastBoard} from './src/beast.js'
+import {BeastBoard, Rabbit} from './src/beast.js'
 import DragPlugin from 'phaser3-rex-plugins/plugins/drag-plugin.js'
 
 class Demo extends Phaser.Scene {
@@ -42,26 +40,30 @@ class Demo extends Phaser.Scene {
         }
 
         // create list to store chess
-        this.allyBase = []
-        this.enermyBase = []
+        this.allyHand = ["000000", "000000", "000000", "000000", "000000", "000000", "000000", "000000"] // 8
+        this.allyBase = []         // 3
+        this.enermyBase = []       // 3
         this.allyChess = []
         this.enermyChess = []
 
-        // create
-        this.allyBase.push(new BeastBoard(this.board, "000000", 1, this, {x:500, y:500}))
-        this.enermyBase.push(new BeastBoard(this.board, "000000", -1, this, {x:300, y:500}))
-        // this.allyChess.push(new Beast(this.board, {x:3, y:3}, "000000", 1)) //how to add many chess  
-        // this.enermyChess.push(new Beast(this.board, {x:3, y:5}, "000000", -1))     
+        // create Deck
+        for(let i = 0; i < 3 ; i++)
+        {
+            var chooseBeast = this.allyHand.shift()
+            var newBeast
+            switch(chooseBeast) {
+                case "000000":
+                    newBeast = new Rabbit(this.board, 1, this, {x:500 + i * 100, y:500})
+                    break
+                default:
+                    newBeast = new Rabbit(this.board, 1, this, {x:500 + i * 100, y:500})
+            }
+            console.log(newBeast)
+            this.allyBase.push(new BeastBoard(i, this.board, newBeast, this, {x:500 + i * 100, y:500}))
+        }
 
-        // add chess
-        //this.chessA = new ChessA(this.board);
+        // this.enermyBase.push(new BeastBoard(this.board, "000000", -1, this, {x:300, y:500}))
 
-        // add some blockers
-        //for (var i = 0; i < 20; i++) {
-        //    new Blocker(this.board);
-        //}
-
-        //this.chessA.showMoveableArea();
     }
 
     update(){
@@ -243,7 +245,7 @@ var config = {
     plugins: {
           scene: [{
               key: 'rexBoard',
-              plugin: rexboardplugin,
+              plugin: BoardPlugin,
               mapping: 'rexBoard'
           }],
           global:[
