@@ -74,7 +74,7 @@ class Demo extends Phaser.Scene {
       })()
     })
 
-    var tileXYArray = board.fit(this.rexBoard.hexagonMap.hexagon(board, 6));
+    var tileXYArray = board.fit(this.rexBoard.hexagonMap.hexagon(board, 4));
     var graphics = this.add.graphics({
       lineStyle: {
         width: 3,
@@ -85,11 +85,9 @@ class Demo extends Phaser.Scene {
     var tileXY, worldXY
     for (var i in tileXYArray) {
       tileXY = tileXYArray[i]
-      if((tileXY.x<11&&tileXY.x>0&&tileXY.y>2&&tileXY.y<10)||(tileXY.x==11&&tileXY.y%2==0)){
         graphics.strokePoints(board.getGridPoints(tileXY.x, tileXY.y, true), true)
         worldXY = board.tileXYToWorldXY(tileXY.x, tileXY.y)
         this.add.text(worldXY.x, worldXY.y, `${tileXY.x},${tileXY.y}`).setOrigin(0.5)
-      }
     }
     board.addChess(p, 9, 4, 1, true)
   }

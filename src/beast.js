@@ -1,7 +1,7 @@
 const AreaColor = 0xFF9E00
 
 export default class Beast extends RexPlugins.Board.Shape {
-    constructor(board, tileXY, type){
+    constructor(blockFront, blockBack, board, tileXY, type){
         var scene = board.scene
         super(board, tileXY.x, tileXY.y, 0, AreaColor)
         this.setScale(0.95)
@@ -9,18 +9,39 @@ export default class Beast extends RexPlugins.Board.Shape {
         // private members
         this._timer
         this._parent = this
+        this._location = {x:0, y:0}
         this._character = type
-        this._blockArea = [this]
+        this._blockArea = []
         this._enermy = []
-
-        // add behavior
-        this.MoveBehavior = scene.rexBoard.add.moveTo(this, {
-            speed: 50,
-            occupiedTest: true
-        })
 
         // add the correct beast
         board.addChess(this._character, tileXY.x, tileXY.y, 1, true)
+
+        // add blocks
+        if(blockFront.length != 0)
+        {
+            for(let i = 0; i < blockFront.length; i++)
+            {
+                this._blockArea.push(blockFront[i])
+            }
+        }
+        this._blockArea.push(this)
+        if(blockBack.length != 0)
+        {
+            for(let i = 0; i < blockBack.length; i++)
+            {
+                this._blockArea.push(blockBack[i])
+            }
+        }
+        console.log(this._blockArea)
+        for(let i = 0; i < this._blockArea.length; i++)
+        {
+            this._blockArea[i]._parent = this
+            this._blockArea[i].setVisible(true)
+            console.log(tileXY.x + this._blockArea[i]._location.x)
+            console.log(tileXY.y + this._blockArea[i]._location.y)
+            board.moveChess(this._blockArea[i], tileXY.x + this._blockArea[i]._location.x, tileXY.y + this._blockArea[i]._location.y, 0, true)
+        }
 
         // add behavior
         this.MoveBehavior = scene.rexBoard.add.moveTo(this, {
@@ -37,6 +58,8 @@ export default class Beast extends RexPlugins.Board.Shape {
     // function to use
     keepMoving(board) {
         // use interval
+        console.log(this._character)
+        setTimeout(() => {console.log(this._character)}, 0)
         this._timer = setInterval(() => {
             console.log(this._character)
             this._character.anims.play('run',true) 
@@ -76,6 +99,17 @@ export default class Beast extends RexPlugins.Board.Shape {
                 console.log(this._enermy)
             }
             this._character.MoveBehavior.moveToward(0)
+            for(let i = 0; i < this._enermy.length; i++)
+            {
+                if(this._enermy[i]._parent === board)
+                {
+                    this._enermy[i].killItself(board)
+                }
+                else
+                {
+                    this._character.act(board, this._enermy[i])
+                }
+            }
         }
         if(AllyOrEnermy === 1) // ally
         {// move to left
@@ -127,7 +161,7 @@ export default class Beast extends RexPlugins.Board.Shape {
 }
 
 export class BeastBoard extends Phaser.GameObjects.Sprite {
-    constructor(baseNumber, board, type, scene, tileXY, texture, frame) {
+    constructor(baseNumber, blockFront, blockBack, board, type, scene, tileXY, texture, frame) {
         super(scene, tileXY.x, tileXY.y, texture, frame)
         
         // private members
@@ -157,12 +191,12 @@ export class BeastBoard extends Phaser.GameObjects.Sprite {
                 if(this._character._identity === 1)
                 {
                     scene.allyBase.splice(baseNumber, 1)
-                    scene.allyChess.push(new Beast(board, tileXY, this._character))
+                    scene.allyChess.push(new Beast(blockFront, blockBack, board, tileXY, this._character))
                 }
                 else if(this._character._identity === -1)
                 {
                     scene.enermyBase.splice(baseNumber, 1)
-                    scene.enermyChess.push(new Beast(board, tileXY, this._character))
+                    scene.enermyChess.push(new Beast(blockFront, blockBack, board, tileXY, this._character))
                 }
                 this._character.killItself(board)
             }
@@ -181,7 +215,10 @@ export class Rabbit extends Phaser.GameObjects.Sprite {
         this._active = "day"
         this._moving = true
         this._identity = identity
-        this._area = [{x:0, y:1}]
+        this._allyAreaFront = [{x:-1, y:1}]
+        this._allyAreaBack = []
+        this._enermyAreaFront = [{x:0, y:1}]
+        this._enermyAreaBack = []
         this.timer
 
         scene.add.existing(this)
@@ -221,7 +258,7 @@ export class Rabbit extends Phaser.GameObjects.Sprite {
 
     killItself(board) {
         clearInterval(this.timer)
-        board.removeChess(this, null, null, null, true)
+        //board.removeChess(this, null, null, null, true)
     }
 
     act(board, occupiedChess) {
@@ -238,25 +275,3 @@ export class Rabbit extends Phaser.GameObjects.Sprite {
         }
     }
 }
-
-class Block extends RexPlugins.Board.Shape {
-    constructor(board, tileX, tileY, parentclass) {
-        var scene = board.scene
-        super(board, tileX, tileY, 0, AreaColor)
-        this.setScale(0.95)
-
-        this._parent = parentclass
-        scene.add.existing(this)
-
-        // add behavior
-        this.MoveBehavior = scene.rexBoard.add.moveTo(this, {
-            speed: 50,
-            occupiedTest: true
-        })
-    }
-
-    killItself(board) {
-        board.removeChess(this, null, null, null, true)
-    }
-}
-

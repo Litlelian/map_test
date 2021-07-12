@@ -5,11 +5,14 @@
 <script type="module">
 import Phaser from 'phaser'
 import BoardPlugin from 'phaser3-rex-plugins/plugins/board-plugin.js'
-import Beast from './src/beast.js'
-import {BeastBoard, Rabbit} from './src/beast.js'
+import Beast from './src/createBeast.js'
 import DragPlugin from 'phaser3-rex-plugins/plugins/drag-plugin.js'
 
-class Demo extends Phaser.Scene {
+const BoardLineColor = 0x43a047
+const DayColor = 0xFFBF00
+const NightColor = 0x0047AB
+
+class HexBeast extends Phaser.Scene {
     constructor() {
         super({
             key: 'examples'
@@ -26,71 +29,37 @@ class Demo extends Phaser.Scene {
         // create board
         var config = {
             grid: getHexagonGrid(this),
-            // grid: getQuadGrid(this),
             width: 9,
-            height: 7,
-            // wrap: true
+            height: 7
         }
-        this.board = new Board(this, config);
+        this.board = new Board(this, config)
+
+        this.timer
 
         for(var i = 1; i < 6; i=i+2)
         {
-            new Blocker(this.board, {x:0,y:i}, this.board)
-            new Blocker(this.board, {x:8,y:i}, this.board)
+            new Crystal(this.board, {x:0, y:i}, NightColor)
+            new Crystal(this.board, {x:8, y:i}, DayColor)
         }
 
         // create list to store chess
-        this.allyHand = ["000000", "000000", "000000", "000000", "000000", "000000", "000000", "000000"] // 8
-        this.allyBase = []         // 3
-        this.enermyBase = []       // 3
+        this.allyDeck = ["000000", "000000", "000000", "000000", "000000", "000000", "000000", "000000"] // 8
+        this.enermyDeck = ["000000", "000000", "000000", "000000", "000000", "000000", "000000", "000000"] // 8
+        this.allyHand = []         // 3
+        this.enermyHand = []       // 3
         this.allyChess = []
         this.enermyChess = []
 
         // create Deck
         for(let i = 0; i < 3 ; i++)
         {
-            var chooseBeast = this.allyHand.shift()
-            var newBeast
-            switch(chooseBeast) {
-                case "000000":
-                    newBeast = new Rabbit(this.board, 1, this, {x:500 + i * 100, y:500})
-                    break
-                default:
-                    newBeast = new Rabbit(this.board, 1, this, {x:500 + i * 100, y:500})
-            }
-            console.log(newBeast)
-            this.allyBase.push(new BeastBoard(i, this.board, newBeast, this, {x:500 + i * 100, y:500}))
+            this.allyHand.push(new Beast(i, 1, this.board, this.allyDeck.shift(), this, {x:500 + i * 100, y:500}))
+            this.enermyHand.push(new Beast(i, -1, this.board, this.enermyDeck.shift(), this, {x:100 + i * 100, y:500}))
         }
-
-        // this.enermyBase.push(new BeastBoard(this.board, "000000", -1, this, {x:300, y:500}))
-
     }
 
     update(){
-
-        // kill
-        if(this.allyChess.length && this.allyChess[0]._xin === -1)
-        {
-            this.allyChess[0].killItself(this.board)
-            this.allyChess.pop()
-        }
-        if(this.enermyChess.length && this.enermyChess[0]._xin === 9)
-        {
-            this.enermyChess[0].killItself(this.board)
-            this.enermyChess.pop()
-        }
     }
-}
-
-var getQuadGrid = function (scene) {
-    var grid = scene.rexBoard.add.quadGrid({
-        x: 400,
-        y: 100,
-        cellWidth: 100,
-        cellHeight: 50,
-        type: 1
-    });
-    return grid;
 }
 
 var getHexagonGrid = function (scene) {
@@ -114,7 +83,7 @@ class Board extends RexPlugins.Board.Board {
         var graphics = scene.add.graphics({
             lineStyle: {
                 width: 3,
-                color: COLOR_PRIMARY,
+                color: BoardLineColor,
                 alpha: 1
             }
         });
@@ -127,121 +96,34 @@ class Board extends RexPlugins.Board.Board {
     }
 }
 
-class Blocker extends RexPlugins.Board.Shape {
-    constructor(board, tileXY, parentClass) {
-        var scene = board.scene;
-        if (tileXY === undefined) {
-            tileXY = board.getRandomEmptyTileXY(0);
-        }
-        // Shape(board, tileX, tileY, tileZ, fillColor, fillAlpha, addToBoard)
-        super(board, tileXY.x, tileXY.y, 0, COLOR_DARK);
-        this._parent = parentClass
-        scene.add.existing(this);
+class Crystal extends RexPlugins.Board.Shape {
+    constructor(board, tileXY, color) {
+        var scene = board.scene
+        super(board, tileXY.x, tileXY.y, 0, color)
+        this.setScale(0.95)
+
+        this._parent = board
+        this._location = tileXY
+        scene.add.existing(this)
+
+        // add behavior
+        this.MoveBehavior = scene.rexBoard.add.moveTo(this, {
+            speed: 50,
+            occupiedTest: true
+        })
     }
 
-    killItself(board)
-    {
+    killItself(board) {
         board.removeChess(this, null, null, null, true)
     }
 }
-
-class ChessA extends RexPlugins.Board.Shape {
-    constructor(board, tileXY) {
-        var scene = board.scene;
-        if (tileXY === undefined) {
-            tileXY = board.getRandomEmptyTileXY(0);
-        }
-        // Shape(board, tileX, tileY, tileZ, fillColor, fillAlpha, addToBoard)
-        super(board, tileXY.x, tileXY.y, 0, COLOR_LIGHT);
-        scene.add.existing(this);
-        this.setDepth(1);
-
-        // add behaviors        
-        this.moveTo = scene.rexBoard.add.moveTo(this);
-        this.pathFinder = scene.rexBoard.add.pathFinder(this, {
-            occupiedTest: true
-        });
-
-        // private members
-        this._movingPoints = 4;
-        this._markers = [];
-    }
-
-    showMoveableArea() {
-        this.hideMoveableArea();
-        var tileXYArray = this.pathFinder.findArea(this._movingPoints);
-        for (var i = 0, cnt = tileXYArray.length; i < cnt; i++) {
-            this._markers.push(
-                new MoveableMarker(this, tileXYArray[i])
-            );
-        }
-        return this;
-    }
-
-    hideMoveableArea() {
-        for (var i = 0, cnt = this._markers.length; i < cnt; i++) {
-            this._markers[i].destroy();
-        }
-        this._markers.length = 0;
-        return this;
-    }
-
-    moveToTile(endTile) {
-        if (this.moveTo.isRunning) {
-            return false;
-        }
-        var tileXYArray = this.pathFinder.getPath(endTile.rexChess.tileXYZ);
-        this.moveAlongPath(tileXYArray);
-        return true;
-    }
-
-    moveAlongPath(path) {
-        if (path.length === 0) {
-            this.showMoveableArea();
-            return;
-        }
-
-        this.moveTo.once('complete', function () {
-            this.moveAlongPath(path);
-        }, this);
-        this.moveTo.moveTo(path.shift());
-        return this;
-    }
-}
-
-class MoveableMarker extends RexPlugins.Board.Shape {
-    constructor(chess, tileXY) {
-        var board = chess.rexChess.board;
-        var scene = board.scene;
-        // Shape(board, tileX, tileY, tileZ, fillColor, fillAlpha, addToBoard)
-        super(board, tileXY.x, tileXY.y, -1, COLOR2_DARK);
-        scene.add.existing(this);
-        this.setScale(0.5);
-
-        // on pointer down, move to this tile
-        this.on('board.pointerdown', function () {
-            if (!chess.moveToTile(this)) {
-                return;
-            }
-            this.setFillStyle(COLOR2_LIGHT);
-        }, this);
-    }
-}
-
-const COLOR_PRIMARY = 0x43a047;
-const COLOR_LIGHT = 0x76d275;
-const COLOR_DARK = 0x00701a;
-
-const COLOR2_PRIMARY = 0xd81b60;
-const COLOR2_LIGHT = 0xff5c8d;
-const COLOR2_DARK = 0xa00037;
 
 var config = {
     type: Phaser.AUTO,
     parent: 'phaser-example',
     width: 800,
     height: 600,
-    scene: Demo,
+    scene: HexBeast,
     plugins: {
           scene: [{
               key: 'rexBoard',
