@@ -61,7 +61,7 @@ export default class Beast extends Phaser.GameObjects.Sprite {
             }
         })
     }
-        // function to use
+    // function to use
     keepMoving(board) {
         // use interval
         var scene = board.scene
@@ -181,7 +181,6 @@ export default class Beast extends Phaser.GameObjects.Sprite {
                 }
             }
         }
-        console.log(centerIndex)
         this._blockArea[centerIndex].rexChess.setTileZ(0)
         this._blockArea[centerIndex].MoveBehavior.setSpeed(50)
     }
@@ -190,18 +189,20 @@ export default class Beast extends Phaser.GameObjects.Sprite {
     {
         if(tileXY.x>=0 && tileXY.x<=8 && tileXY.y>=0 && tileXY.y<=6)
         {
+            var undefinedColor
             var testBlock = []
             if(identity === 1)
             {
                 for(let i = 0; i < this._character._allyArea.length; i++)
                 {
-                    testBlock.push(new Block(board, tileXY, -3))
+                    testBlock.push(new Block(board, tileXY, -3, undefinedColor, this))
                     if(this._character._allyArea[i] != -69)
                     {
                         testBlock[i].rexChess.setTileZ(-2)
                         testBlock[i].MoveBehavior.moveToward(this._character._allyArea[i])
                         var blockSituation = board.chessToTileXYZ(testBlock[i])
-                        if(board.tileXYZToChess(blockSituation.x, blockSituation.y, 0)){
+                        console.log(board.tileXYZToChess(blockSituation.x, blockSituation.y, -3))
+                        if(board.tileXYZToChess(blockSituation.x, blockSituation.y, 0) || board.tileXYZToChess(blockSituation.x, blockSituation.y, -3)){
                             for(let i = 0; i < testBlock.length; i++)
                             {
                                 board.removeChess(testBlock.pop(), null, null, null, true)
@@ -226,11 +227,11 @@ export default class Beast extends Phaser.GameObjects.Sprite {
             {
                 for(let i = 0; i < this._character._enermyArea.length; i++)
                 {
-                    testBlock.push(new Block(board, tileXY, -3))
+                    testBlock.push(new Block(board, tileXY, -3, undefinedColor, this))
                     if(this._character._enermyArea[i] != -69)
                     {
                         testBlock[i].rexChess.setTileZ(-2)
-                        testBlock[i].MoveBehavior.moveToward(this._character._allyArea[i])
+                        testBlock[i].MoveBehavior.moveToward(this._character._enermyArea[i])
                         var blockSituation = board.chessToTileXYZ(testBlock[i])
                         if(board.tileXYZToChess(blockSituation.x, blockSituation.y, 0)){
                             for(let i = 0; i < testBlock.length; i++)
@@ -253,11 +254,40 @@ export default class Beast extends Phaser.GameObjects.Sprite {
                     }
                 }
             }
+            
+            // make sure there at least one block close to another ally unit
+            // var numberCloseOtherUnit = 0
+            // for(let i = 0; i < testBlock.length; i++)
+            // {
+            //     var neighborTileXY = board.getNeighborTileXY(testBlock[i]._location, null)
+            //     for(let j = 0; j < neighborTileXY.length; j++)
+            //     {
+            //         var neighborChessArray = board.tileXYToChessArray(neighborTileXY[j].x, neighborTileXY[j].y)
+            //         console.log(i + " "+ j)
+            //         console.log(neighborTileXY)
+            //         console.log(neighborChessArray)
+            //         if(neighborChessArray.length && neighborChessArray[0]._parent != this)
+            //         {
+            //             numberCloseOtherUnit++
+            //         }
+            //     }
+            // }
+
             for(let i = 0; i < testBlock.length; i++)
             {
                 board.removeChess(testBlock[i], null, null, null, true)
             }
+
             return true
+
+            if(numberCloseOtherUnit)
+            {
+                return true
+            }
+            else
+            {
+                return false
+            }
         }
         return false
     }
