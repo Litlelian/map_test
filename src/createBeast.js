@@ -59,6 +59,14 @@ export default class Beast extends Phaser.GameObjects.Sprite {
                 }
                 this._character.killItself(board)
             }
+            else
+            {
+                this.x = 300 + 200 * this._character._identity + baseNumber * 100
+                this.y = 500
+                this._character.x = 300 + 200 * this._character._identity + baseNumber * 100
+                this._character.y = 500
+                this._character.anims.play('idle',true)
+            }
         })
     }
     // function to use
