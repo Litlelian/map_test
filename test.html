@@ -38,8 +38,8 @@ class HexBeast extends Phaser.Scene {
 
         for(var i = 1; i < 6; i=i+2)
         {
-            new Crystal(this.board, {x:0, y:i}, NightColor)
-            new Crystal(this.board, {x:8, y:i}, DayColor)
+            new Crystal(this.board, {x:0, y:i}, -1)
+            new Crystal(this.board, {x:8, y:i}, 1)
         }
 
         // create list to store chess
@@ -97,13 +97,23 @@ class Board extends RexPlugins.Board.Board {
 }
 
 class Crystal extends RexPlugins.Board.Shape {
-    constructor(board, tileXY, color) {
+    constructor(board, tileXY, identity) {
         var scene = board.scene
+        var color
+        if(identity === 1)
+        {
+            color = DayColor
+        }
+        else if(identity === -1)
+        {
+            color = NightColor
+        }
         super(board, tileXY.x, tileXY.y, 0, color)
         this.setScale(0.95)
 
         this._parent = board
         this._location = tileXY
+        this._identity = identity
         scene.add.existing(this)
 
         // add behavior
