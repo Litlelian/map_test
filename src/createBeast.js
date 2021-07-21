@@ -6,7 +6,7 @@ export default class Beast extends Phaser.GameObjects.Sprite {
         super(scene, tileXY.x, tileXY.y, texture, frame)
 
         // private properties
-        this._moving = true
+        this._moving = false
         this._character
         this._blockArea = []
         this._enermy = []
@@ -14,10 +14,10 @@ export default class Beast extends Phaser.GameObjects.Sprite {
         // choose correct character
         switch(beastID) {
             case "000000":
-                this._character = new Rabbit(identity, scene, tileXY)
+                this._character = new Rabbit(identity, scene, tileXY, this)
                 break
             default:
-                this._character = new Rabbit(identity, scene, tileXY)
+                this._character = new Rabbit(identity, scene, tileXY, this)
         }
         
         // add behavior
@@ -46,18 +46,21 @@ export default class Beast extends Phaser.GameObjects.Sprite {
                 if(this._character._identity === 1)
                 {
                     scene.allyHand.splice(baseNumber, 1, new Beast(baseNumber, 1, board, scene.allyDeck.shift(), scene, {x:500 + baseNumber * 100, y:500}))
+                    scene.allChessOnBoard.push(this)
                     this.createTerritory(board, tileXY, 1)
                     board.addChess(this._character, tileXY.x, tileXY.y, 1, true)
-                    this.keepMoving(board)
+                    this._moving = true
+                    //this.keepMoving(board)
                 }
                 else if(this._character._identity === -1)
                 {
                     scene.enermyHand.splice(baseNumber, 1, new Beast(baseNumber, -1, board, scene.enermyDeck.shift(), scene, {x:100 + baseNumber * 100, y:500}))
+                    scene.allChessOnBoard.push(this)
                     this.createTerritory(board, tileXY, -1)
                     board.addChess(this._character, tileXY.x, tileXY.y, 1, true)
-                    this.keepMoving(board)
+                    this._moving = true
+                    //this.keepMoving(board)
                 }
-                this._character.killItself(board)
             }
             else
             {
@@ -86,60 +89,94 @@ export default class Beast extends Phaser.GameObjects.Sprite {
     }
 
     moveforward(board, AllyOrEnermy) {
-        //var tileXYZ = board.chessToTileXYZ(this)
+        var ifOccupy = 0 // if it's zero, it means no block occupy
         if(AllyOrEnermy === -1) // enermy
         {// move to right
             for(let i = 0; i < this._blockArea.length; i++)
             {
-                this._blockArea[i].MoveBehavior.on('occupy', function(occupiedChess, thischess){
-                    this._moving = false
-                    this._character.anims.play('idle',true) 
-                    this._enermy.push(occupiedChess._parent)
-                    console.log(occupiedChess)
+                var neighborTileXY = board.getNeighborTileXY(this._blockArea[i]._location, 0)
+                var neighborChessArray = board.tileXYToChessArray(neighborTileXY.x, neighborTileXY.y)
+                if(neighborChessArray.length && neighborChessArray[0]._parent != this && neighborChessArray[0]._identity != this._character._identity)
+                {
+                    this._enermy.push(neighborChessArray[0])
+                    ifOccupy++
                     for(let i = 0; i < this._enermy.length-1; i++)
                     {
-                        if(occupiedChess._parent === this._enermy[i]._parent)
+                        if(neighborChessArray[0]._parent === this._enermy[i]._parent)
                         {
                             this._enermy.pop()
+                            ifOccupy--
                             break
                         }
                     }
-                },this)
-                this._blockArea[i].MoveBehavior.moveToward(0)
+                }
             }
-            this._character.MoveBehavior.moveToward(0)
+            if(!ifOccupy)
+            {
+                for(let i = 0; i < this._blockArea.length; i++)
+                {
+                    this._blockArea[i].MoveBehavior.moveToward(0)
+                    var blockSituation = board.chessToTileXYZ(this._blockArea[i])
+                    this._blockArea[i]._location = {x:blockSituation.x, y:blockSituation.y}
+                }
+                this._character.MoveBehavior.moveToward(0)
+            }
+            else
+            {
+                this._moving = false
+            }
         }
         if(AllyOrEnermy === 1) // ally
         {// move to left
             for(let i = 0; i < this._blockArea.length; i++)
             {
-                this._blockArea[i].MoveBehavior.on('occupy', function(occupiedChess, thischess){
-                    this._moving = false
-                    this._character.anims.play('idle',true) 
-                    this._enermy.push(occupiedChess)
+                var neighborTileXY = board.getNeighborTileXY(this._blockArea[i]._location, 3)
+                var neighborChessArray = board.tileXYToChessArray(neighborTileXY.x, neighborTileXY.y)
+                if(neighborChessArray[0] && neighborChessArray[0]._parent != this && neighborChessArray[0]._identity != this._character._identity)
+                {
+                    this._enermy.push(neighborChessArray[0])
+                    ifOccupy++
                     for(let i = 0; i < this._enermy.length-1; i++)
                     {
-                        if(occupiedChess._parent === this._enermy[i]._parent)
+                        if(neighborChessArray[0]._parent === this._enermy[i]._parent)
                         {
                             this._enermy.pop()
                             break
                         }
                     }
-                },this)
-                this._blockArea[i].MoveBehavior.moveToward(3)
+                }
             }
-            this._character.MoveBehavior.moveToward(3)
-        }
-        for(let i = 0; i < this._enermy.length; i++)
-        {
-            if(this._enermy[i]._parent === board)
+            if(!ifOccupy)
             {
-                this._enermy[i].killItself(board)
+                for(let i = 0; i < this._blockArea.length; i++)
+                {
+                    this._blockArea[i].MoveBehavior.moveToward(3)
+                    var blockSituation = board.chessToTileXYZ(this._blockArea[i])
+                    this._blockArea[i]._location = {x:blockSituation.x, y:blockSituation.y}
+                }
+                this._character.MoveBehavior.moveToward(3)
             }
             else
             {
+                this._moving = false
+            }
+        }
+        var checkEnermyHasCrystal = 0 // if it's zero, it means no crystal be touched
+        for(let i = 0; i < this._enermy.length; i++)
+        {
+            if(this._enermy[i]._parent === board) // occupied by Crystal
+            {
+                this._enermy[i].killItself(board)
+                checkEnermyHasCrystal ++
+            }
+            else if(this._enermy[i]._parent != "boundary")
+            {
                 this._character.act(board, this._enermy[i])
             }
+        }
+        if(checkEnermyHasCrystal)
+        {
+            this.killItself(board)
         }
     }
 
@@ -160,6 +197,8 @@ export default class Beast extends Phaser.GameObjects.Sprite {
                     .on('complete', function(moveTo, gameObject){
                         this._blockArea[i].MoveBehavior.setSpeed(50)
                     }, this)
+                    var blockSituation = board.chessToTileXYZ(this._blockArea[i])
+                    this._blockArea[i]._location = {x:blockSituation.x, y:blockSituation.y}
                 }
                 else
                 {
@@ -181,6 +220,8 @@ export default class Beast extends Phaser.GameObjects.Sprite {
                     .on('complete', function(moveTo, gameObject){
                         this._blockArea[i].MoveBehavior.setSpeed(50)
                     }, this)
+                    var blockSituation = board.chessToTileXYZ(this._blockArea[i])
+                    this._blockArea[i]._location = {x:blockSituation.x, y:blockSituation.y}
                 }
                 else
                 {
@@ -209,7 +250,7 @@ export default class Beast extends Phaser.GameObjects.Sprite {
                         testBlock[i].rexChess.setTileZ(-2)
                         testBlock[i].MoveBehavior.moveToward(this._character._allyArea[i])
                         var blockSituation = board.chessToTileXYZ(testBlock[i])
-                        testBlock[i]._location = blockSituation
+                        testBlock[i]._location = {x:blockSituation.x, y:blockSituation.y}
                         if(board.tileXYZToChess(blockSituation.x, blockSituation.y, 0) || board.tileXYZToChess(blockSituation.x, blockSituation.y, -4)){
                             for(let i = 0; i < testBlock.length; i++)
                             {
@@ -242,7 +283,7 @@ export default class Beast extends Phaser.GameObjects.Sprite {
                         testBlock[i].rexChess.setTileZ(-2)
                         testBlock[i].MoveBehavior.moveToward(this._character._enermyArea[i])
                         var blockSituation = board.chessToTileXYZ(testBlock[i])
-                        testBlock[i]._location = blockSituation
+                        testBlock[i]._location = {x:blockSituation.x, y:blockSituation.y}
                         if(board.tileXYZToChess(blockSituation.x, blockSituation.y, 0) || board.tileXYZToChess(blockSituation.x, blockSituation.y, -4)){
                             for(let i = 0; i < testBlock.length; i++)
                             {
@@ -297,21 +338,34 @@ export default class Beast extends Phaser.GameObjects.Sprite {
         }
         return false
     }
+
+    killItself(board)
+    {
+        for(let i = 0; i < this._blockArea.length; i++)
+        {
+            board.removeChess(this._blockArea[i], null, null, null, true)
+            this._blockArea[i].destroy()
+        }
+        board.removeChess(this._character, null, null, null, true)
+        this._character.destroy()
+        delete this
+    }
 }
 
 class Rabbit extends Phaser.GameObjects.Sprite {
-    constructor(identity, scene, tileXY, texture, frame) {
+    constructor(identity, scene, tileXY, parentClass, texture, frame) {
         super(scene, tileXY.x, tileXY.y, texture, frame)
 
         // private members
         this._life = 2
-        this._attack = 2
+        this._attack = 1
         this._speed = 3000
         this._active = "day"
         this._color = -331469
         this._identity = identity
         this._allyArea = [2, -69, 0] // front -> center -> back  // direction -> use moveToward function, -69 is center
-        this._enermyArea = [1, -69]
+        this._enermyArea = [1, -69, 3]
+        this._parent = parentClass
         this.timer
 
         scene.add.existing(this)
@@ -355,16 +409,19 @@ class Rabbit extends Phaser.GameObjects.Sprite {
     }
 
     act(board, occupiedChess) {
-        // judge itself live or not
-        if(this._life <= 0)
+        if(occupiedChess._parent != board && occupiedChess._parent != "boundary" && occupiedChess._identity != this._identity)
         {
-            // add Voice Of Death here
-            this.killItself(board) 
-        }
-        else
-        {
-            occupiedChess._character.anims.play('hit',true)
-            occupiedChess._character._life = occupiedChess._character._life - this._attack
+            occupiedChess._parent._moving = false
+            occupiedChess._parent._character._life = occupiedChess._parent._character._life - this._attack
+            if(occupiedChess._parent._character._life <= 0)
+            {
+                occupiedChess._parent.killItself(board)
+            }
+            else
+            {
+                occupiedChess._parent._character.anims.play('hit',true)
+            }
+            this._parent._moving = true
         }
     }
 }

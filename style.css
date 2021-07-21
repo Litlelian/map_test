@@ -1,0 +1,37 @@
+* {
+    margin: 0px;
+    padding: 0px;
+}
+
+#timer {
+    position: fixed;
+    top: 450px;
+    left: 350px;
+    width: 100px;
+    height: 110px;
+    z-index: 2;
+}
+
+#timer .flexbox {
+    width: 100px;
+}
+
+#timer .hex {
+    position: relative;
+    stroke: #A9A9A9;
+    stroke-width: 7px;
+    fill: #FFBF00;
+    fill-opacity: 50%;
+}
+
+#timer #hex_board {
+    stroke-width: 7px;
+    stroke-linecap: round;
+    stroke : #FFBF00;
+    fill: transparent;
+}
+
+#app {
+    position: relative;
+    z-index: 1;
+}
