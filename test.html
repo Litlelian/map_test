@@ -34,28 +34,49 @@ class HexBeast extends Phaser.Scene {
         }
         this.board = new Board(this, config)
 
-        this.timer
-
-        for(var i = 1; i < 6; i=i+2)
-        {
-            new Crystal(this.board, {x:0, y:i}, -1)
-            new Crystal(this.board, {x:8, y:i}, 1)
-        }
-
         // create list to store chess
         this.allyDeck = ["000000", "000000", "000000", "000000", "000000", "000000", "000000", "000000"] // 8
         this.enermyDeck = ["000000", "000000", "000000", "000000", "000000", "000000", "000000", "000000"] // 8
         this.allyHand = []         // 3
         this.enermyHand = []       // 3
-        this.allyChess = []
-        this.enermyChess = []
+        this.allChessOnBoard = []
+        this.allyCrystal = []
+        this.enermyCrystal = []
 
         // create Deck
+
+        for(let i = 1; i < 6; i = i + 2)
+        {
+            this.allyCrystal.push(new Crystal(this.board, {x:0, y:i}, -1))
+            this.enermyCrystal.push(new Crystal(this.board, {x:8, y:i}, 1))
+        }
+
+        for(let i = 0; i < 7; i = i + 2)
+        {
+            new Boundary(this.board, {x:0, y:i})
+        }
+
         for(let i = 0; i < 3 ; i++)
         {
             this.allyHand.push(new Beast(i, 1, this.board, this.allyDeck.shift(), this, {x:500 + i * 100, y:500}))
             this.enermyHand.push(new Beast(i, -1, this.board, this.enermyDeck.shift(), this, {x:100 + i * 100, y:500}))
         }
+
+        // create timer
+
+        this.timer = setInterval(() => {
+            for(let i = 0; i < this.allChessOnBoard.length; i++)
+            {
+                if(this.allChessOnBoard[i]._moving)
+                {
+                    this.allChessOnBoard[i]._character.anims.play('run',true) 
+                    this.allChessOnBoard[i].moveforward(this.board, this.allChessOnBoard[i]._character._identity)
+                    this.allChessOnBoard[i]._character.MoveBehavior.on('complete', function(moveTo, gameObject){
+                        this.allChessOnBoard[i]._character.anims.play('idle',true) 
+                    },this)
+                }
+            }
+        }, 3000)
     }
 
     update(){
@@ -125,6 +146,22 @@ class Crystal extends RexPlugins.Board.Shape {
 
     killItself(board) {
         board.removeChess(this, null, null, null, true)
+    }
+}
+
+class Boundary extends RexPlugins.Board.Shape {
+    constructor(board, tileXY)
+    {
+        var scene = board.scene
+        super(board, tileXY.x, tileXY.y, 0, 0xFFFFFF)
+        
+        this._parent = "boundary"
+        this._location = tileXY
+        this._identity = 0
+
+        this.setScale(0.95)
+        
+        scene.add.existing(this)
     }
 }
 
