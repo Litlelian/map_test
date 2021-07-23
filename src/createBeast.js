@@ -357,6 +357,7 @@ class Rabbit extends Phaser.GameObjects.Sprite {
         super(scene, tileXY.x, tileXY.y, texture, frame)
 
         // private members
+        this._cost = 2
         this._life = 2
         this._attack = 1
         this._speed = 3000

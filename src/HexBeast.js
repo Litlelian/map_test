@@ -5,7 +5,11 @@ import DragPlugin from 'phaser3-rex-plugins/plugins/drag-plugin.js'
 
 const BoardLineColor = 0x43a047
 const DayColor = 0xFFBF00
+const DuskColor = 0xFF8218
 const NightColor = 0x0047AB
+const DawnColor = 0x807CFF
+const TimeRoundOrderColor = ["#FFBF00", "#FF8218", "#0047AB", "#807CFF"]
+const TimeRoundOrderImage = ["day", "dusk", "night", "dawn"]
 
 class HexBeast extends Phaser.Scene {
     constructor() {
@@ -40,7 +44,18 @@ class HexBeast extends Phaser.Scene {
 
         // create Deck
 
-        this.time // 0:day 1:dusk 2:night 3:dawn, always start from dusk or dawn
+        this.time = 1 // 0:day 1:dusk 2:night 3:dawn, always start from dusk or dawn
+        this.allyEnergy = 0
+        this.enermyEnergy = 0
+
+        if(Math.floor(Math.random()*2)) // decide which timer go first
+        {
+            this.time = 1
+        }
+        else
+        {
+            this.time = 3
+        }
 
         for(let i = 1; i < 6; i = i + 2)
         {
@@ -62,7 +77,7 @@ class HexBeast extends Phaser.Scene {
         // create timer
 
         document.getElementById("timer").innerHTML = `
-        <div class="flexbox">
+        <div id="timer_flexbox">
           <svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="100%" height="110" xmlns:xlink="http://www.w3.org/1999/xlink"> 
             <polygon class="hex" points="50,5 93,30 93,80 50,105 7,80 7,30"></polygon>   
             <path id="hex_board" d="M 50,5 L 93,30 L 93,80 L 50,105 L 7,80 L 7,30 Z" />  
@@ -72,6 +87,9 @@ class HexBeast extends Phaser.Scene {
 
         this.timerTickForBeast = 0
         this.timerTickForDasharray = 7
+
+        document.getElementById("hex_board").setAttribute("stroke", TimeRoundOrderColor[this.time])
+        document.getElementById("timer_flexbox").style.backgroundImage = "url('./src/assets/timeSymbol/" + TimeRoundOrderImage[this.time] + ".svg')"
 
         this.timer = setInterval(() => {
             this.timerTickForBeast++
@@ -91,7 +109,7 @@ class HexBeast extends Phaser.Scene {
                 }
                 this.timerTickForBeast = 0
             }
-            document.getElementById("hex_board").setAttribute("stroke-dasharray", `${50 * this.timerTickForDasharray} 300`)
+            document.getElementById("hex_board").setAttribute("stroke-dasharray", `${50 * this.timerTickForDasharray - 3} 300`)
             if(this.timerTickForDasharray === 0)
             {
                 // switch round
@@ -104,6 +122,8 @@ class HexBeast extends Phaser.Scene {
                 {
                     this.time++
                 }
+                document.getElementById("hex_board").setAttribute("stroke", TimeRoundOrderColor[this.time])
+                document.getElementById("timer_flexbox").style.backgroundImage = "url('./src/assets/timeSymbol/" + TimeRoundOrderImage[this.time] + ".svg')"
             }
         }, 1000)
     }

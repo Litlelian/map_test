@@ -12,22 +12,23 @@
     z-index: 2;
 }
 
-#timer .flexbox {
+#timer #timer_flexbox {
     width: 100px;
+    background: no-repeat center ;
+    background-image: url(./src/assets/day.svg);
 }
 
 #timer .hex {
-    position: relative;
+    position: fixed;
     stroke: #A9A9A9;
     stroke-width: 7px;
-    fill: #FFBF00;
-    fill-opacity: 50%;
+    fill: transparent;
 }
 
 #timer #hex_board {
+    position: fixed;
     stroke-width: 7px;
     stroke-linecap: round;
-    stroke : #FFBF00;
     fill: transparent;
 }
 
