@@ -86,7 +86,7 @@ class HexBeast extends Phaser.Scene {
         ` // add timer shape
 
         this.timerTickForBeast = 0
-        this.timerTickForDasharray = 7
+        this.timerTickForDasharray = 6
 
         document.getElementById("hex_board").setAttribute("stroke", TimeRoundOrderColor[this.time])
         document.getElementById("timer_flexbox").style.backgroundImage = "url('./src/assets/timeSymbol/" + TimeRoundOrderImage[this.time] + ".svg')"
@@ -100,16 +100,19 @@ class HexBeast extends Phaser.Scene {
                 {
                     if(this.allChessOnBoard[i]._moving)
                     {
-                        this.allChessOnBoard[i]._character.anims.play('run',true) 
-                        this.allChessOnBoard[i].moveforward(this.board, this.allChessOnBoard[i]._character._identity)
-                        this.allChessOnBoard[i]._character.MoveBehavior.on('complete', function(moveTo, gameObject){
-                            this.allChessOnBoard[i]._character.anims.play('idle',true) 
-                        },this)
-                    }
+                        if(this.allChessOnBoard[i].testIfChessBeOccupied(this.board, this.allChessOnBoard[i]._character._identity))
+                        {
+                            this.allChessOnBoard[i]._character.anims.play('run',true) 
+                            this.allChessOnBoard[i].moveforward(this.board, this.allChessOnBoard[i]._character._identity)
+                            this.allChessOnBoard[i]._character.MoveBehavior.on('complete', function(moveTo, gameObject){
+                                this.allChessOnBoard[i]._character.anims.play('idle',true) 
+                            },this)
+                        }
+                    }   
                 }
                 this.timerTickForBeast = 0
             }
-            document.getElementById("hex_board").setAttribute("stroke-dasharray", `${50 * this.timerTickForDasharray - 3} 300`)
+            document.getElementById("hex_board").setAttribute("stroke-dasharray", `${50 * this.timerTickForDasharray} 300`)
             if(this.timerTickForDasharray === 0)
             {
                 // switch round
@@ -122,6 +125,7 @@ class HexBeast extends Phaser.Scene {
                 {
                     this.time++
                 }
+                document.getElementById("hex_board").setAttribute("stroke-dasharray", `300 300`)
                 document.getElementById("hex_board").setAttribute("stroke", TimeRoundOrderColor[this.time])
                 document.getElementById("timer_flexbox").style.backgroundImage = "url('./src/assets/timeSymbol/" + TimeRoundOrderImage[this.time] + ".svg')"
             }

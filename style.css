@@ -30,6 +30,7 @@
     stroke-width: 7px;
     stroke-linecap: round;
     fill: transparent;
+    transition: all linear 0.7s;
 }
 
 #app {
