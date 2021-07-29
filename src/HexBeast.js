@@ -22,6 +22,9 @@ class HexBeast extends Phaser.Scene {
         this.load.spritesheet('bunny','./src/assets/bunny1.png',{frameWidth:34,frameHeight:60})
         this.load.spritesheet('bunny_run','./src/assets/bunny2.png',{frameWidth:34,frameHeight:60})
         this.load.spritesheet('bunny_hit','./src/assets/bunny3.png',{frameWidth:34,frameHeight:60})
+        this.load.spritesheet('chicken','./src/assets/chicken1.png',{frameWidth:32,frameHeight:40})
+        this.load.spritesheet('chicken_run','./src/assets/chicken2.png',{frameWidth:32,frameHeight:40})
+        this.load.spritesheet('chicken_hit','./src/assets/chicken3.png',{frameWidth:32,frameHeight:40})
     }
 
     create() {
@@ -34,8 +37,8 @@ class HexBeast extends Phaser.Scene {
         this.board = new Board(this, config)
 
         // create list to store chess
-        this.allyDeck = ["000000", "000000", "000000", "000000", "000000", "000000", "000000", "000000"] // 8
-        this.enermyDeck = ["000000", "000000", "000000", "000000", "000000", "000000", "000000", "000000"] // 8
+        this.allyDeck = ["000000", "000002", "000000", "000002", "000000", "000000", "000002", "000000"] // 8
+        this.enermyDeck = ["000000", "000002", "000000", "000002", "000000", "000000", "000002", "000000"] // 8
         this.allyHand = []         // 3
         this.enermyHand = []       // 3
         this.allChessOnBoard = []
@@ -102,10 +105,10 @@ class HexBeast extends Phaser.Scene {
                     {
                         if(this.allChessOnBoard[i].testIfChessBeOccupied(this.board, this.allChessOnBoard[i]._character._identity))
                         {
-                            this.allChessOnBoard[i]._character.anims.play('run',true) 
+                            this.allChessOnBoard[i]._character.runAnime()
                             this.allChessOnBoard[i].moveforward(this.board, this.allChessOnBoard[i]._character._identity)
                             this.allChessOnBoard[i]._character.MoveBehavior.on('complete', function(moveTo, gameObject){
-                                this.allChessOnBoard[i]._character.anims.play('idle',true) 
+                                this.allChessOnBoard[i]._character.idleAnime() 
                             },this)
                         }
                     }   

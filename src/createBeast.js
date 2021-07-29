@@ -17,6 +17,9 @@ export default class Beast extends Phaser.GameObjects.Sprite {
             case "000000":
                 this._character = new Rabbit(identity, scene, tileXY, this)
                 break
+            case "000002":
+                this._character = new Chicken(identity, scene, tileXY, this)
+                break
             default:
                 this._character = new Rabbit(identity, scene, tileXY, this)
         }
@@ -35,12 +38,12 @@ export default class Beast extends Phaser.GameObjects.Sprite {
             this.y = dragY
             this._character.x = dragX
             this._character.y = dragY
-            this._character.anims.play('run',true)
+            this._character.runAnime()
         })
 
         this.on('dragend', function(pointer, dragX, dragY){ 
             var tileXY = board.worldXYToTileXY(this.x, this.y)
-            this._character.anims.play('idle',true)
+            this._character.idleAnime()
             if(this.testIfChessCanPut(board, tileXY, identity))
             {
                 this.drag.setEnable(false)
@@ -67,7 +70,7 @@ export default class Beast extends Phaser.GameObjects.Sprite {
                 this.y = 500
                 this._character.x = 300 + 200 * this._character._identity + baseNumber * 100
                 this._character.y = 500
-                this._character.anims.play('idle',true)
+                this._character.idleAnime()
             }
         })
     }
@@ -338,12 +341,11 @@ class Rabbit extends Phaser.GameObjects.Sprite {
         this._cost = 2
         this._life = 2
         this._attack = 1
-        this._speed = 3000
         this._active = "day"
         this._color = -331469
         this._identity = identity
-        this._allyArea = [2, -69, 0] // front -> center -> back  // direction -> use moveToward function, -69 is center
-        this._enermyArea = [1, -69, 3]
+        this._allyArea = [-69, 0] // front -> center -> back  // direction -> use moveToward function, -69 is center
+        this._enermyArea = [-69, 3]
         this._parent = parentClass
 
         scene.add.existing(this)
@@ -356,27 +358,27 @@ class Rabbit extends Phaser.GameObjects.Sprite {
         })
 
         scene.anims.create({
-            key: 'idle',
+            key: 'bunny_idle',
             frames: this.anims.generateFrameNumbers('bunny',{start:0 , end: 7}),
             frameRate: 10,
             repeat: -1
         })
 
         scene.anims.create({
-            key: 'run',
+            key: 'bunny_run',
             frames: this.anims.generateFrameNumbers('bunny_run',{start:0 , end: 11}),
             frameRate: 10,
             repeat: -1
         })
 
         scene.anims.create({
-            key: 'hit',
+            key: 'bunny_hit',
             frames: this.anims.generateFrameNumbers('bunny_hit',{start:0 , end: 4}),
             frameRate: 10,
             repeat: -1
         })
 
-        this.anims.play('idle',true) 
+        this.idleAnime()
     }
     
     // function to use
@@ -392,9 +394,100 @@ class Rabbit extends Phaser.GameObjects.Sprite {
             }
             else
             {
-                occupiedChess._parent._character.anims.play('hit',true)
+                occupiedChess._parent._character.hitAnime()
             }
         }
+    }
+    
+    idleAnime() {
+        this.anims.play('bunny_idle',true)
+    }
+    
+    runAnime() {
+        this.anims.play('bunny_run',true)
+    }
+
+    hitAnime() {
+        this.anims.play('bunny_hit',true)
+    }
+}
+
+class Chicken extends Phaser.GameObjects.Sprite {
+    constructor(identity, scene, tileXY, parentClass, texture, frame) {
+        super(scene, tileXY.x, tileXY.y, texture, frame)
+
+        // private members
+        this._cost = 3
+        this._life = 3
+        this._attack = 2
+        this._active = "day"
+        this._color = -321409
+        this._identity = identity
+        this._allyArea = [2, -69, 0] // front -> center -> back  // direction -> use moveToward function, -69 is center
+        this._enermyArea = [1, -69, 3]
+        this._parent = parentClass
+
+        scene.add.existing(this)
+
+        this.setDepth(2)
+        this.scaleX = this._identity
+        this.MoveBehavior = scene.rexBoard.add.moveTo(this, {
+            speed: 50,
+            occupiedTest: true
+        })
+
+        scene.anims.create({
+            key: 'chicken_idle',
+            frames: this.anims.generateFrameNumbers('chicken',{start:0 , end: 12}),
+            frameRate: 10,
+            repeat: -1
+        })
+
+        scene.anims.create({
+            key: 'chicken_run',
+            frames: this.anims.generateFrameNumbers('chicken_run',{start:0 , end: 13}),
+            frameRate: 10,
+            repeat: -1
+        })
+
+        scene.anims.create({
+            key: 'chicken_hit',
+            frames: this.anims.generateFrameNumbers('chicken_hit',{start:0 , end: 4}),
+            frameRate: 10,
+            repeat: -1
+        })
+
+        this.idleAnime() 
+    }
+    
+    // function to use
+
+    act(board, occupiedChess) {
+        if(occupiedChess._parent != board && occupiedChess._identity != this._identity)
+        {
+            occupiedChess._parent._character._life = occupiedChess._parent._character._life - this._attack
+            if(occupiedChess._parent._character._life <= 0)
+            {
+                board.scene.allChessOnBoard.splice(board.scene.allChessOnBoard.indexOf(occupiedChess._paren), 1)
+                occupiedChess._parent.killItself(board)
+            }
+            else
+            {
+                occupiedChess._parent._character.hitAnime()
+            }
+        }
+    }
+
+    idleAnime() {
+        this.anims.play('chicken_idle',true)
+    }
+    
+    runAnime() {
+        this.anims.play('chicken_run',true)
+    }
+
+    hitAnime() {
+        this.anims.play('chicken_hit',true)
     }
 }
 
