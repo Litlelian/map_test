@@ -101,7 +101,7 @@ class HexBeast extends Phaser.Scene {
     }
 
     allChessActOnce(hour) {
-        if (hour % 4 === 3) {
+        if (hour % 3 === 0) {
             for (let i = 0; i < this.allChessOnBoard.length; i++) {
                 if (this.allChessOnBoard[i]._onBoard) {
                     if (this.allChessOnBoard[i].testIfChessBeOccupied(this.board, this.allChessOnBoard[i]._character._identity)) {
@@ -117,7 +117,7 @@ class HexBeast extends Phaser.Scene {
     }
 
     switchTime(hour) {
-        if (hour % 7 === 6) {
+        if (hour % 6 === 0) {
             // switch round
             document.getElementById("hex_board").setAttribute("stroke-dasharray", `300 300`)
             document.getElementById("hex_board").setAttribute("stroke", TIME_ROUND_ORDER_COLOR[parseInt(hour / 6) % 4])
