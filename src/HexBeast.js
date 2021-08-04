@@ -3,13 +3,14 @@ import BoardPlugin from 'phaser3-rex-plugins/plugins/board-plugin.js'
 import Beast from './createBeast.js'
 import DragPlugin from 'phaser3-rex-plugins/plugins/drag-plugin.js'
 
-const BoardLineColor = 0x43a047
-const DayColor = 0xFFBF00
-const DuskColor = 0xFF8218
-const NightColor = 0x0047AB
-const DawnColor = 0x807CFF
-const TimeRoundOrderColor = ["#FFBF00", "#FF8218", "#0047AB", "#807CFF"]
-const TimeRoundOrderImage = ["day", "dusk", "night", "dawn"]
+const ROUND_TIME = 1000
+const BOARD_LINE_COLOR = 0x43a047
+const DAY_COLOR = 0xFFBF00
+const DUSK_COLOR = 0xFF8218
+const NIGHT_COLOR = 0x0047AB
+const DAWN_COLOR = 0x807CFF
+const TIME_ROUND_ORDER_COLOR = ["#FFBF00", "#FF8218", "#0047AB", "#807CFF"]
+const TIME_ROUND_ORDER_IMAGE = ["day", "dusk", "night", "dawn"]
 
 class HexBeast extends Phaser.Scene {
     constructor() {
@@ -47,32 +48,27 @@ class HexBeast extends Phaser.Scene {
 
         // create Deck
 
-        this.time = 1 // 0:day 1:dusk 2:night 3:dawn, always start from dusk or dawn
+        this.hour = 6 // 0:day 6:dusk 12:night 18:dawn, always start from dusk or dawn
         this.allyEnergy = 0
         this.enermyEnergy = 0
 
-        if(Math.floor(Math.random()*2)) // decide which timer go first
-        {
-            this.time = 1
+        if (Math.floor(Math.random()*2)) { // decide which timer go first
+            this.hour = 6
         }
-        else
-        {
-            this.time = 3
+        else {
+            this.hour = 18
         }
 
-        for(let i = 1; i < 6; i = i + 2)
-        {
+        for (let i = 1; i < 6; i = i + 2) {
             this.allyCrystal.push(new Crystal(this.board, {x:0, y:i}, -1))
             this.enermyCrystal.push(new Crystal(this.board, {x:8, y:i}, 1))
         }
 
-        for(let i = 0; i < 7; i = i + 2)
-        {
+        for (let i = 0; i < 7; i = i + 2) {
             new Boundary(this.board, {x:0, y:i})
         }
 
-        for(let i = 0; i < 3 ; i++)
-        {
+        for (let i = 0; i < 3 ; i++) {
             this.allyHand.push(new Beast(i, 1, this.board, this.allyDeck.shift(), this, {x:500 + i * 100, y:500}))
             this.enermyHand.push(new Beast(i, -1, this.board, this.enermyDeck.shift(), this, {x:100 + i * 100, y:500}))
         }
@@ -88,54 +84,45 @@ class HexBeast extends Phaser.Scene {
         </div>
         ` // add timer shape
 
-        this.timerTickForBeast = 0
-        this.timerTickForDasharray = 6
-
-        document.getElementById("hex_board").setAttribute("stroke", TimeRoundOrderColor[this.time])
-        document.getElementById("timer_flexbox").style.backgroundImage = "url('./src/assets/timeSymbol/" + TimeRoundOrderImage[this.time] + ".svg')"
+        // reset timer anime
+        document.getElementById("hex_board").setAttribute("stroke", TIME_ROUND_ORDER_COLOR[parseInt(this.hour / 6) % 4])
+        document.getElementById("timer_flexbox").style.backgroundImage = "url('./src/assets/timeSymbol/" + TIME_ROUND_ORDER_IMAGE[parseInt(this.hour / 6) % 4] + ".svg')"
 
         this.timer = setInterval(() => {
-            this.timerTickForBeast++
-            this.timerTickForDasharray--
-            if(this.timerTickForBeast === 3)
-            {
-                for(let i = 0; i < this.allChessOnBoard.length; i++)
-                {
-                    if(this.allChessOnBoard[i]._moving)
-                    {
-                        if(this.allChessOnBoard[i].testIfChessBeOccupied(this.board, this.allChessOnBoard[i]._character._identity))
-                        {
-                            this.allChessOnBoard[i]._character.runAnime()
-                            this.allChessOnBoard[i].moveforward(this.board, this.allChessOnBoard[i]._character._identity)
-                            this.allChessOnBoard[i]._character.MoveBehavior.on('complete', function(moveTo, gameObject){
-                                this.allChessOnBoard[i]._character.idleAnime() 
-                            },this)
-                        }
-                    }   
-                }
-                this.timerTickForBeast = 0
-            }
-            document.getElementById("hex_board").setAttribute("stroke-dasharray", `${50 * this.timerTickForDasharray} 300`)
-            if(this.timerTickForDasharray === 0)
-            {
-                // switch round
-                this.timerTickForDasharray = 6
-                if(this.time === 3)
-                {
-                    this.time = 0
-                }
-                else
-                {
-                    this.time++
-                }
-                document.getElementById("hex_board").setAttribute("stroke-dasharray", `300 300`)
-                document.getElementById("hex_board").setAttribute("stroke", TimeRoundOrderColor[this.time])
-                document.getElementById("timer_flexbox").style.backgroundImage = "url('./src/assets/timeSymbol/" + TimeRoundOrderImage[this.time] + ".svg')"
-            }
-        }, 1000)
+            this.hour++
+            this.allChessActOnce(this.hour)
+            // round timer : )
+            document.getElementById("hex_board").setAttribute("stroke-dasharray", `${50 * (6 - this.hour % 6)} 300`)
+            this.switchTime(this.hour)
+        }, ROUND_TIME)
     }
 
-    update(){
+    update() {
+    }
+
+    allChessActOnce(hour) {
+        if (hour % 4 === 3) {
+            for (let i = 0; i < this.allChessOnBoard.length; i++) {
+                if (this.allChessOnBoard[i]._onBoard) {
+                    if (this.allChessOnBoard[i].testIfChessBeOccupied(this.board, this.allChessOnBoard[i]._character._identity)) {
+                        this.allChessOnBoard[i]._character.runAnime()
+                        this.allChessOnBoard[i].moveforward(this.board, this.allChessOnBoard[i]._character._identity)
+                        this.allChessOnBoard[i]._character.MoveBehavior.on('complete', function(moveTo, gameObject){
+                            this.allChessOnBoard[i]._character.idleAnime() 
+                        },this)
+                    }
+                }   
+            }
+        }
+    }
+
+    switchTime(hour) {
+        if (hour % 7 === 6) {
+            // switch round
+            document.getElementById("hex_board").setAttribute("stroke-dasharray", `300 300`)
+            document.getElementById("hex_board").setAttribute("stroke", TIME_ROUND_ORDER_COLOR[parseInt(hour / 6) % 4])
+            document.getElementById("timer_flexbox").style.backgroundImage = "url('./src/assets/timeSymbol/" + TIME_ROUND_ORDER_IMAGE[parseInt(hour / 6) % 4] + ".svg')"
+        }
     }
 }
 
@@ -160,7 +147,7 @@ class Board extends RexPlugins.Board.Board {
         var graphics = scene.add.graphics({
             lineStyle: {
                 width: 3,
-                color: BoardLineColor,
+                color: BOARD_LINE_COLOR,
                 alpha: 1
             }
         })
@@ -177,13 +164,13 @@ class Crystal extends RexPlugins.Board.Shape {
     constructor(board, tileXY, identity) {
         var scene = board.scene
         var color
-        if(identity === 1)
+        if (identity === 1)
         {
-            color = DayColor
+            color = DAY_COLOR
         }
-        else if(identity === -1)
+        else if (identity === -1)
         {
-            color = NightColor
+            color = NIGHT_COLOR
         }
         super(board, tileXY.x, tileXY.y, 0, color)
         this.setScale(0.95)
