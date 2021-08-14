@@ -7,7 +7,7 @@ export default class Beast extends Phaser.GameObjects.Sprite {
 
         // private properties
         this._onBoard = false
-        this._fighting = false
+        this._blockedByAllyChess = false
         this._character
         this._blockArea = []
         this._enermy = []
@@ -88,7 +88,11 @@ export default class Beast extends Phaser.GameObjects.Sprite {
             var blockSituation = board.chessToTileXYZ(this._blockArea[i])
             this._blockArea[i]._location = {x:blockSituation.x, y:blockSituation.y}
         }
+        this._character.runAnime()
         this._character.MoveBehavior.moveToward(moveDirection)
+        this._character.MoveBehavior.on('complete', function(moveTo, gameObject){
+            this._character.idleAnime()
+        }, this)
     }
 
     createTerritory(board, tileXY, identity) {// add blocks 
@@ -220,17 +224,16 @@ export default class Beast extends Phaser.GameObjects.Sprite {
         return false
     }
 
-    testIfChessBeOccupied(board, identity) {
+    testChessOccupiedAndAct(board, identity) {
+        // if it touch the board
         for (let i = 0; i < this._blockArea.length; i++) {
             if (identity === 1) { // ally
                 if (this._blockArea[i]._location.x === 0 || (this._blockArea[i]._location.x === 1 && this._blockArea[i]._location.y % 2 === 0)) {
-                    this._onBoard = false
                     return false
                 }
             }
             else if (identity === -1) {// enermy
                 if (this._blockArea[i]._location.x === 8) {
-                    this._onBoard = false
                     return false
                 }
             }
@@ -285,12 +288,36 @@ export default class Beast extends Phaser.GameObjects.Sprite {
             return false
         }
         else if (allyBlockChess) {
-            board.scene.allChessOnBoard.splice(board.scene.allChessOnBoard.indexOf(this), 1)
-            board.scene.allChessOnBoard.push(this)
-            return false
+            this.moveFirstAndDetect()
+            this.moveforward(board, this._character._identity)
+            return true
         }
         else {
+            this.moveforward(board, this._character._identity)
             return true
+        }
+    }
+
+    moveFirstAndDetect() {
+        this._blockedByAllyChess = true
+        for (let i = 0; i < this._blockArea.length; i++) {
+            this._blockArea[i].rexChess.setTileZ(-6)
+        }
+        this._character.rexChess.setTileZ(-5)
+    }
+
+    backToLastMoveIfOccupied(board) {
+        if (this._blockedByAllyChess) {
+            for (let i = 0; i < this._blockArea.length; i++) {
+                if (board.tileXYZToChess(this._blockArea[i]._location.x, this._blockArea[i]._location.y, 0)) {
+                    this.moveforward(board, -1 * this._character._identity)
+                }
+            }
+            this._blockedByAllyChess = false
+            for (let i = 0; i < this._blockArea.length; i++) {
+                this._blockArea[i].rexChess.setTileZ(0)
+            }
+            this._character.rexChess.setTileZ(1)
         }
     }
 
@@ -483,22 +510,22 @@ class Bat extends Phaser.GameObjects.Sprite {
         })
 
         scene.anims.create({
-            key: 'chicken_idle',
-            frames: this.anims.generateFrameNumbers('chicken',{start:0 , end: 12}),
+            key: 'bat_idle',
+            frames: this.anims.generateFrameNumbers('bat',{start:0 , end: 11}),
             frameRate: 10,
             repeat: -1
         })
 
         scene.anims.create({
-            key: 'chicken_run',
-            frames: this.anims.generateFrameNumbers('chicken_run',{start:0 , end: 13}),
+            key: 'bat_run',
+            frames: this.anims.generateFrameNumbers('bat_run',{start:0 , end: 6}),
             frameRate: 10,
             repeat: -1
         })
 
         scene.anims.create({
-            key: 'chicken_hit',
-            frames: this.anims.generateFrameNumbers('chicken_hit',{start:0 , end: 4}),
+            key: 'bat_hit',
+            frames: this.anims.generateFrameNumbers('bat_hit',{start:0 , end: 4}),
             frameRate: 10,
             repeat: -1
         })
@@ -522,15 +549,15 @@ class Bat extends Phaser.GameObjects.Sprite {
     }
 
     idleAnime() {
-        this.anims.play('chicken_idle',true)
+        this.anims.play('bat_idle',true)
     }
     
     runAnime() {
-        this.anims.play('chicken_run',true)
+        this.anims.play('bat_run',true)
     }
 
     hitAnime() {
-        this.anims.play('chicken_hit',true)
+        this.anims.play('bat_hit',true)
     }
 }
 

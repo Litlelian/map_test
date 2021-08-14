@@ -112,29 +112,8 @@ class HexBeast extends Phaser.Scene {
                     // Activate skill when each move round start (3 hours)
                 }   
             }
-            for (let scanAndMove = 1; scanAndMove <= 8; scanAndMove++) { // scanning from left to right, detecting whether the block can move
-                for (let y = 0; y <= 6; y++) {
-                    var scanAllyChess = this.board.tileXYToChessArray(scanAndMove, y)
-                    var scanEnermyChess = this.board.tileXYToChessArray(9 - scanAndMove, y)
-                    if (scanAllyChess.length && scanAllyChess[0]._parent != this.board && scanAllyChess[0]._identity === 1 && scanAllyChess[0]._canMove) {
-                        for (let i = 0; i < scanAllyChess.length; i++) {
-                            if (scanAllyChess[i]._depthWhenCreate != -5) {
-                                scanAllyChess[i].moveforward(this.board)
-                                scanAllyChess[i]._canMove = false
-                                scanAllyChess[i]._parent.removePredictMove(this.board)
-                            }
-                        }
-                    }
-                    if (scanEnermyChess.length && scanEnermyChess[0]._parent != this.board && scanEnermyChess[0]._identity === -1 && scanEnermyChess[0]._canMove) {
-                        for (let i = 0; i < scanEnermyChess.length; i++) {
-                            if (scanEnermyChess[i]._depthWhenCreate != -5) {
-                                scanEnermyChess[i].moveforward(this.board)
-                                scanEnermyChess[i]._canMove = false
-                                scanEnermyChess[i]._parent.removePredictMove(this.board)
-                            }
-                        }
-                    }
-                }
+            for (let i = 0; i < this.allChessOnBoard.length; i++) {
+                this.allChessOnBoard[i].backToLastMoveIfOccupied(this.board)
             }
         }
     }
