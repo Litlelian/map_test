@@ -26,6 +26,9 @@ class HexBeast extends Phaser.Scene {
         this.load.spritesheet('chicken','./src/assets/chicken1.png',{frameWidth:32,frameHeight:40})
         this.load.spritesheet('chicken_run','./src/assets/chicken2.png',{frameWidth:32,frameHeight:40})
         this.load.spritesheet('chicken_hit','./src/assets/chicken3.png',{frameWidth:32,frameHeight:40})
+        this.load.spritesheet('bat','./src/assets/bat1.png',{frameWidth:46,frameHeight:45})
+        this.load.spritesheet('bat_run','./src/assets/bat2.png',{frameWidth:46,frameHeight:45})
+        this.load.spritesheet('bat_hit','./src/assets/bat3.png',{frameWidth:46,frameHeight:45})
     }
 
     create() {
@@ -38,8 +41,8 @@ class HexBeast extends Phaser.Scene {
         this.board = new Board(this, config)
 
         // create list to store chess
-        this.allyDeck = ["000000", "000002", "000000", "000002", "000000", "000000", "000002", "000000"] // 8
-        this.enermyDeck = ["000000", "000002", "000000", "000002", "000000", "000000", "000002", "000000"] // 8
+        this.allyDeck = ["000000", "000002", "000001", "000002", "000000", "000000", "000002", "000000"] // 8
+        this.enermyDeck = ["000000", "000002", "000001", "000002", "000000", "000000", "000002", "000000"] // 8
         this.allyHand = []         // 3
         this.enermyHand = []       // 3
         this.allChessOnBoard = []
@@ -60,8 +63,8 @@ class HexBeast extends Phaser.Scene {
         }
 
         for (let i = 1; i < 6; i = i + 2) {
-            this.allyCrystal.push(new Crystal(this.board, {x:0, y:i}, -1))
-            this.enermyCrystal.push(new Crystal(this.board, {x:8, y:i}, 1))
+            this.enermyCrystal.push(new Crystal(this.board, {x:0, y:i}, -1, -1))
+            this.allyCrystal.push(new Crystal(this.board, {x:8, y:i}, 1, 1))
         }
 
         for (let i = 0; i < 7; i = i + 2) {
@@ -90,10 +93,11 @@ class HexBeast extends Phaser.Scene {
 
         this.timer = setInterval(() => {
             this.hour++
+            this.clearDeadBeast(this.board)
             this.allChessActOnce(this.hour)
             // round timer : )
             document.getElementById("hex_board").setAttribute("stroke-dasharray", `${50 * (6 - this.hour % 6)} 300`)
-            this.switchTime(this.hour)
+            this.switchTimeAndGiveEnergy(this.hour)
         }, ROUND_TIME)
     }
 
@@ -104,24 +108,55 @@ class HexBeast extends Phaser.Scene {
         if (hour % 3 === 0) {
             for (let i = 0; i < this.allChessOnBoard.length; i++) {
                 if (this.allChessOnBoard[i]._onBoard) {
-                    if (this.allChessOnBoard[i].testIfChessBeOccupied(this.board, this.allChessOnBoard[i]._character._identity)) {
-                        this.allChessOnBoard[i]._character.runAnime()
-                        this.allChessOnBoard[i].moveforward(this.board, this.allChessOnBoard[i]._character._identity)
-                        this.allChessOnBoard[i]._character.MoveBehavior.on('complete', function(moveTo, gameObject){
-                            this.allChessOnBoard[i]._character.idleAnime() 
-                        },this)
-                    }
+                    this.allChessOnBoard[i].testChessOccupiedAndAct(this.board, this.allChessOnBoard[i]._character._identity)
+                    // Activate skill when each move round start (3 hours)
                 }   
+            }
+            for (let scanAndMove = 1; scanAndMove <= 8; scanAndMove++) { // scanning from left to right, detecting whether the block can move
+                for (let y = 0; y <= 6; y++) {
+                    var scanAllyChess = this.board.tileXYToChessArray(scanAndMove, y)
+                    var scanEnermyChess = this.board.tileXYToChessArray(9 - scanAndMove, y)
+                    if (scanAllyChess.length && scanAllyChess[0]._parent != this.board && scanAllyChess[0]._identity === 1 && scanAllyChess[0]._canMove) {
+                        for (let i = 0; i < scanAllyChess.length; i++) {
+                            if (scanAllyChess[i]._depthWhenCreate != -5) {
+                                scanAllyChess[i].moveforward(this.board)
+                                scanAllyChess[i]._canMove = false
+                                scanAllyChess[i]._parent.removePredictMove(this.board)
+                            }
+                        }
+                    }
+                    if (scanEnermyChess.length && scanEnermyChess[0]._parent != this.board && scanEnermyChess[0]._identity === -1 && scanEnermyChess[0]._canMove) {
+                        for (let i = 0; i < scanEnermyChess.length; i++) {
+                            if (scanEnermyChess[i]._depthWhenCreate != -5) {
+                                scanEnermyChess[i].moveforward(this.board)
+                                scanEnermyChess[i]._canMove = false
+                                scanEnermyChess[i]._parent.removePredictMove(this.board)
+                            }
+                        }
+                    }
+                }
             }
         }
     }
 
-    switchTime(hour) {
+    switchTimeAndGiveEnergy(hour) {
         if (hour % 6 === 0) {
             // switch round
+            for(let i = 0; i < this.allyCrystal.length; i++) {
+                this.allyCrystal[i].addEnergy(this, hour)
+            }
             document.getElementById("hex_board").setAttribute("stroke-dasharray", `300 300`)
             document.getElementById("hex_board").setAttribute("stroke", TIME_ROUND_ORDER_COLOR[parseInt(hour / 6) % 4])
             document.getElementById("timer_flexbox").style.backgroundImage = "url('./src/assets/timeSymbol/" + TIME_ROUND_ORDER_IMAGE[parseInt(hour / 6) % 4] + ".svg')"
+        }
+    }
+
+    clearDeadBeast(board) {
+        for (let i = 0; i < this.allChessOnBoard.length; i++) {
+            if(this.allChessOnBoard[i]._character._life <= 0)
+            {
+                this.allChessOnBoard[i].killItself(board)
+            }
         }
     }
 }
@@ -161,14 +196,14 @@ class Board extends RexPlugins.Board.Board {
 }
 
 class Crystal extends RexPlugins.Board.Shape {
-    constructor(board, tileXY, identity) {
+    constructor(board, tileXY, identity, crystalType) {
         var scene = board.scene
         var color
-        if (identity === 1)
+        if (crystalType === 1)
         {
             color = DAY_COLOR
         }
-        else if (identity === -1)
+        else if (crystalType === -1)
         {
             color = NIGHT_COLOR
         }
@@ -177,6 +212,7 @@ class Crystal extends RexPlugins.Board.Shape {
 
         this._parent = board
         this._location = tileXY
+        this._crystalType = crystalType
         this._identity = identity
         scene.add.existing(this)
 
@@ -187,8 +223,73 @@ class Crystal extends RexPlugins.Board.Shape {
         })
     }
 
+    addEnergy(game, hour) {
+        if(this._crystalType === 1) {
+            if(hour % 24 <=5) { // day
+                if(this._identity === 1) {
+                    game.allyEnergy += 2
+                }
+                else {
+                    game.enermyEnergy += 2
+                }
+            }
+            else if(hour % 24 <=11) { // dusk
+                if(this._identity === 1) {
+                    game.allyEnergy += 1
+                }
+                else {
+                    game.enermyEnergy += 1
+                }
+            }
+            else if(hour % 24 <=17) { // night
+            }
+            else if(hour % 24 <=23) { // dawn
+                if(this._identity === 1) {
+                    game.allyEnergy += 1
+                }
+                else {
+                    game.enermyEnergy += 1
+                }
+            }
+        }
+        else if(this._crystalType === -1) {
+            if(hour % 24 <=5) { // day
+            }
+            else if(hour % 24 <=11) { // dusk
+                if(this._identity === 1) {
+                    game.allyEnergy += 1
+                }
+                else {
+                    game.enermyEnergy += 1
+                }
+            }
+            else if(hour % 24 <=17) { // night
+                if(this._identity === 1) {
+                    game.allyEnergy += 2
+                }
+                else {
+                    game.enermyEnergy += 2
+                }
+            }
+            else if(hour % 24 <=23) { // dawn
+                if(this._identity === 1) {
+                    game.allyEnergy += 1
+                }
+                else {
+                    game.enermyEnergy += 1
+                }
+            }
+        }
+    }
+
     killItself(board) {
         board.removeChess(this, null, null, null, true)
+        if(this._identity === 1) {
+            board.scene.allyCrystal.splice(board.scene.allyCrystal.indexOf(this), 1)
+        }
+        else if(this._identity === -1) {
+            board.scene.enermyCrystal.splice(board.scene.enermyCrystal.indexOf(this), 1)
+        }
     }
 }
 

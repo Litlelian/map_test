@@ -17,6 +17,9 @@ export default class Beast extends Phaser.GameObjects.Sprite {
             case "000000":
                 this._character = new Rabbit(identity, scene, tileXY, this)
                 break
+            case "000001":
+                this._character = new Bat(identity, scene, tileXY, this)
+                break
             case "000002":
                 this._character = new Chicken(identity, scene, tileXY, this)
                 break
@@ -380,6 +383,82 @@ class Rabbit extends Phaser.GameObjects.Sprite {
 }
 
 class Chicken extends Phaser.GameObjects.Sprite {
+    constructor(identity, scene, tileXY, parentClass, texture, frame) {
+        super(scene, tileXY.x, tileXY.y, texture, frame)
+
+        // private members
+        this._cost = 3
+        this._life = 3
+        this._attack = 2
+        this._active = "day"
+        this._color = -321409
+        this._identity = identity
+        this._allyArea = [2, -69, 0] // front -> center -> back  // direction -> use moveToward function, -69 is center
+        this._enermyArea = [1, -69, 3]
+        this._parent = parentClass
+
+        scene.add.existing(this)
+
+        this.setDepth(2)
+        this.scaleX = this._identity
+        this.MoveBehavior = scene.rexBoard.add.moveTo(this, {
+            speed: 50,
+            occupiedTest: true
+        })
+
+        scene.anims.create({
+            key: 'chicken_idle',
+            frames: this.anims.generateFrameNumbers('chicken',{start:0 , end: 12}),
+            frameRate: 10,
+            repeat: -1
+        })
+
+        scene.anims.create({
+            key: 'chicken_run',
+            frames: this.anims.generateFrameNumbers('chicken_run',{start:0 , end: 13}),
+            frameRate: 10,
+            repeat: -1
+        })
+
+        scene.anims.create({
+            key: 'chicken_hit',
+            frames: this.anims.generateFrameNumbers('chicken_hit',{start:0 , end: 4}),
+            frameRate: 10,
+            repeat: -1
+        })
+
+        this.idleAnime() 
+    }
+    
+    // function to use
+
+    act(board, occupiedChess) {
+        if (occupiedChess._parent != board && occupiedChess._identity != this._identity) {
+            occupiedChess._parent._character._life = occupiedChess._parent._character._life - this._attack
+            if (occupiedChess._parent._character._life <= 0) {
+                board.scene.allChessOnBoard.splice(board.scene.allChessOnBoard.indexOf(occupiedChess._paren), 1)
+                occupiedChess._parent.killItself(board)
+            }
+            else {
+                occupiedChess._parent._character.hitAnime()
+            }
+        }
+    }
+
+    idleAnime() {
+        this.anims.play('chicken_idle',true)
+    }
+    
+    runAnime() {
+        this.anims.play('chicken_run',true)
+    }
+
+    hitAnime() {
+        this.anims.play('chicken_hit',true)
+    }
+}
+
+class Bat extends Phaser.GameObjects.Sprite {
     constructor(identity, scene, tileXY, parentClass, texture, frame) {
         super(scene, tileXY.x, tileXY.y, texture, frame)
 
