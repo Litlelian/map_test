@@ -301,9 +301,9 @@ export default class Beast extends Phaser.GameObjects.Sprite {
     moveFirstAndDetect() {
         this._blockedByAllyChess = true
         for (let i = 0; i < this._blockArea.length; i++) {
-            this._blockArea[i].rexChess.setTileZ(-6)
+            this._blockArea[i].MoveBehavior.sneak = true
         }
-        this._character.rexChess.setTileZ(-5)
+        this._character.MoveBehavior.sneak = true
     }
 
     backToLastMoveIfOccupied(board) {
@@ -315,9 +315,9 @@ export default class Beast extends Phaser.GameObjects.Sprite {
             }
             this._blockedByAllyChess = false
             for (let i = 0; i < this._blockArea.length; i++) {
-                this._blockArea[i].rexChess.setTileZ(0)
+                this._blockArea[i].MoveBehavior.sneak = false
             }
-            this._character.rexChess.setTileZ(1)
+            this._character.MoveBehavior.sneak = false
         }
     }
 
@@ -354,7 +354,8 @@ class Rabbit extends Phaser.GameObjects.Sprite {
         this.scaleX = this._identity
         this.MoveBehavior = scene.rexBoard.add.moveTo(this, {
             speed: 50,
-            occupiedTest: true
+            occupiedTest: true,
+            sneak: false
         })
 
         scene.anims.create({
@@ -430,7 +431,8 @@ class Chicken extends Phaser.GameObjects.Sprite {
         this.scaleX = this._identity
         this.MoveBehavior = scene.rexBoard.add.moveTo(this, {
             speed: 50,
-            occupiedTest: true
+            occupiedTest: true,
+            sneak: false
         })
 
         scene.anims.create({
@@ -493,11 +495,11 @@ class Bat extends Phaser.GameObjects.Sprite {
         this._cost = 3
         this._life = 3
         this._attack = 2
-        this._active = "day"
-        this._color = -321409
+        this._active = "night"
+        this._color = -301800
         this._identity = identity
-        this._allyArea = [2, -69, 0] // front -> center -> back  // direction -> use moveToward function, -69 is center
-        this._enermyArea = [1, -69, 3]
+        this._allyArea = [-69, 1, 5] // front -> center -> back  // direction -> use moveToward function, -69 is center
+        this._enermyArea = [-69, 2, 4]
         this._parent = parentClass
 
         scene.add.existing(this)
@@ -506,7 +508,8 @@ class Bat extends Phaser.GameObjects.Sprite {
         this.scaleX = this._identity
         this.MoveBehavior = scene.rexBoard.add.moveTo(this, {
             speed: 50,
-            occupiedTest: true
+            occupiedTest: true,
+            sneak: false
         })
 
         scene.anims.create({
@@ -575,7 +578,8 @@ class Block extends RexPlugins.Board.Shape {
         // add behavior
         this.MoveBehavior = scene.rexBoard.add.moveTo(this, {
             speed: 300,
-            occupiedTest: true
+            occupiedTest: true,
+            sneak: false
         })
     }
 
