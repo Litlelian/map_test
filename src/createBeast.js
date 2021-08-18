@@ -47,19 +47,19 @@ export default class Beast extends Phaser.GameObjects.Sprite {
         this.on('dragend', function(pointer, dragX, dragY){ 
             var tileXY = board.worldXYToTileXY(this.x, this.y)
             this._character.idleAnime()
-            if (this.testIfChessCanPut(board, tileXY, identity)) {
+            if (this.testIfChessCanPut(board, tileXY)) {
                 this.drag.setEnable(false)
                 if (this._character._identity === 1) {
                     scene.allyHand.splice(baseNumber, 1, new Beast(baseNumber, 1, board, scene.allyDeck.shift(), scene, {x:500 + baseNumber * 100, y:500}))
                     scene.allChessOnBoard.push(this)
-                    this.createTerritory(board, tileXY, 1)
+                    this.createTerritory(board, tileXY)
                     board.addChess(this._character, tileXY.x, tileXY.y, 1, true)
                     this._onBoard = true
                 }
                 else if (this._character._identity === -1) {
                     scene.enermyHand.splice(baseNumber, 1, new Beast(baseNumber, -1, board, scene.enermyDeck.shift(), scene, {x:100 + baseNumber * 100, y:500}))
                     scene.allChessOnBoard.push(this)
-                    this.createTerritory(board, tileXY, -1)
+                    this.createTerritory(board, tileXY)
                     board.addChess(this._character, tileXY.x, tileXY.y, 1, true)
                     this._onBoard = true
                 }
@@ -75,12 +75,12 @@ export default class Beast extends Phaser.GameObjects.Sprite {
     }
     // function to use
 
-    moveforward(board, identity) {
+    moveforward(board) {
         var moveDirection = 3
-        if (identity === 1) { // ally
+        if (this._character._identity === 1) { // ally
             moveDirection = 3
         }
-        else if (identity === -1) { // enermy 
+        else if (this._character._identity === -1) { // enermy 
             moveDirection = 0
         }
         for (let i = 0; i < this._blockArea.length; i++) {
@@ -95,10 +95,10 @@ export default class Beast extends Phaser.GameObjects.Sprite {
         }, this)
     }
 
-    createTerritory(board, tileXY, identity) {// add blocks 
+    createTerritory(board, tileXY) {// add blocks 
         var blockColor
         var centerIndex = 0
-        if (identity === 1) {
+        if (this._character._identity === 1) {
             blockColor = DayColor + this._character._color
             for (let i = 0; i < this._character._allyArea.length; i++) {
                 this._blockArea.push(new Block(board, tileXY, -1, blockColor, this))
@@ -117,7 +117,7 @@ export default class Beast extends Phaser.GameObjects.Sprite {
                 }
             }
         }
-        else if (identity === -1) {
+        else if (this._character._identity === -1) {
             blockColor = NightColor + this._character._color
             for (let i = 0; i < this._character._enermyArea.length; i++) {
                 this._blockArea.push(new Block(board, tileXY, -1, blockColor, this))
@@ -140,11 +140,11 @@ export default class Beast extends Phaser.GameObjects.Sprite {
         this._blockArea[centerIndex].MoveBehavior.setSpeed(50)
     }
 
-    testIfChessCanPut(board, tileXY, identity) {//test if the chess can put on what user want
+    testIfChessCanPut(board, tileXY) {//test if the chess can put on what user want
         if (tileXY.x>=0 && tileXY.x<=8 && tileXY.y>=0 && tileXY.y<=6) {
             var undefinedColor
             var testBlock = []
-            if (identity === 1) {
+            if (this._character._identity === 1) {
                 for (let i = 0; i < this._character._allyArea.length; i++) {
                     testBlock.push(new Block(board, tileXY, -3, undefinedColor, this))
                     if (this._character._allyArea[i] != -69) {
@@ -170,7 +170,7 @@ export default class Beast extends Phaser.GameObjects.Sprite {
                     }
                 }
             }
-            else if (identity === -1)
+            else if (this._character._identity === -1)
             {
                 for (let i = 0; i < this._character._enermyArea.length; i++) {
                     testBlock.push(new Block(board, tileXY, -3, undefinedColor, this))
@@ -224,28 +224,18 @@ export default class Beast extends Phaser.GameObjects.Sprite {
         return false
     }
 
-    testChessOccupiedAndAct(board, identity) {
-        // if it touch the board
-        for (let i = 0; i < this._blockArea.length; i++) {
-            if (identity === 1) { // ally
-                if (this._blockArea[i]._location.x === 0 || (this._blockArea[i]._location.x === 1 && this._blockArea[i]._location.y % 2 === 0)) {
-                    return false
-                }
-            }
-            else if (identity === -1) {// enermy
-                if (this._blockArea[i]._location.x === 8) {
-                    return false
-                }
-            }
+    testChessOccupiedAndAct(board) {
+        if (this.detectBoard()) {
+            return false
         }
         this._enermy.length = 0
         var allyBlockChess = 0
         for (let i = 0; i < this._blockArea.length; i++) {
             var neighborTileXY
-            if (identity === 1) { // ally
+            if (this._character._identity === 1) { // ally
                 neighborTileXY = board.getNeighborTileXY(this._blockArea[i]._location, 3)
             }
-            else if (identity === -1) { // enermy
+            else if (this._character._identity === -1) { // enermy
                 neighborTileXY = board.getNeighborTileXY(this._blockArea[i]._location, 0)
             }
             var neighborChessArray = board.tileXYToChessArray(neighborTileXY.x, neighborTileXY.y)
@@ -268,10 +258,10 @@ export default class Beast extends Phaser.GameObjects.Sprite {
             for (let i = 0; i < this._enermy.length; i++) {
                 if (this._enermy[i]._parent === board) { // Occupied by crystal
                     ifAttackCrystal ++
-                    if (identity === 1) {
+                    if (this._character._identity === 1) {
                         board.scene.enermyCrystal.splice(board.scene.enermyCrystal.indexOf(this._enermy[i]), 1)
                     }
-                    else if (identity === -1) {
+                    else if (this._character._identity === -1) {
                         board.scene.allyCrystal.splice(board.scene.enermyCrystal.indexOf(this._enermy[i]), 1)
                     }
                     this._enermy[i].killItself(board)
@@ -288,36 +278,69 @@ export default class Beast extends Phaser.GameObjects.Sprite {
             return false
         }
         else if (allyBlockChess) {
-            this.moveFirstAndDetect()
-            this.moveforward(board, this._character._identity)
+            this._blockedByAllyChess = true
+            this.moveforward(board)
             return true
         }
         else {
-            this.moveforward(board, this._character._identity)
+            this.moveforward(board)
             return true
         }
     }
 
-    moveFirstAndDetect() {
-        this._blockedByAllyChess = true
+    detectBoard() {
+        // if it touch the board
         for (let i = 0; i < this._blockArea.length; i++) {
-            this._blockArea[i].MoveBehavior.sneak = true
+            if (this._character._identity === 1) { // ally
+                if (this._blockArea[i]._location.x === 0 || (this._blockArea[i]._location.x === 1 && this._blockArea[i]._location.y % 2 === 0)) {
+                    return true
+                }
+            }
+            else if (this._character._identity === -1) {// enermy
+                if (this._blockArea[i]._location.x === 8) {
+                    return true
+                }
+            }
         }
-        this._character.MoveBehavior.sneak = true
     }
 
     backToLastMoveIfOccupied(board) {
         if (this._blockedByAllyChess) {
             for (let i = 0; i < this._blockArea.length; i++) {
-                if (board.tileXYZToChess(this._blockArea[i]._location.x, this._blockArea[i]._location.y, 0)) {
-                    this.moveforward(board, -1 * this._character._identity)
+                var everyBlockOnIt = board.tileXYToChessArray(this._blockArea[i]._location.x, this._blockArea[i]._location.y)
+                for (let j = 0; j < everyBlockOnIt.length; j++) {
+                    if (everyBlockOnIt[j]._parent != this) {
+                        this.moveback(board, this._character._identity)
+                        this._blockedByAllyChess = false
+                        return
+                    }
                 }
             }
-            this._blockedByAllyChess = false
-            for (let i = 0; i < this._blockArea.length; i++) {
-                this._blockArea[i].MoveBehavior.sneak = false
+        }
+    }
+
+    moveback(board) {
+        var moveDirection = 3
+        if (this._character._identity === 1) { // ally
+            moveDirection = 0
+        }
+        else if (this._character._identity === -1) { // enermy 
+            moveDirection = 3
+        }
+        this._character.MoveBehavior.moveToward(moveDirection)
+        for (let i = this._blockArea.length - 1; i >= 0; i--) {
+            this._blockArea[i].MoveBehavior.moveToward(moveDirection)
+            var blockSituation = board.chessToTileXYZ(this._blockArea[i])
+            this._blockArea[i]._location = {x:blockSituation.x, y:blockSituation.y}
+        }
+        for (let i = this._blockArea.length - 1; i >= 0; i--) { // infinite loop ??? problem
+            var everyBlockOnIt = board.tileXYToChessArray(this._blockArea[i]._location.x, this._blockArea[i]._location.y)
+            for (let j = 0; j < everyBlockOnIt.length; j++) {
+                if (everyBlockOnIt[j]._parent != this) {
+                    everyBlockOnIt[j]._parent._blockedByAllyChess = false
+                    everyBlockOnIt[j]._parent.moveback(board)
+                }
             }
-            this._character.MoveBehavior.sneak = false
         }
     }
 
@@ -355,7 +378,7 @@ class Rabbit extends Phaser.GameObjects.Sprite {
         this.MoveBehavior = scene.rexBoard.add.moveTo(this, {
             speed: 50,
             occupiedTest: true,
-            sneak: false
+            sneak: true
         })
 
         scene.anims.create({
@@ -432,7 +455,7 @@ class Chicken extends Phaser.GameObjects.Sprite {
         this.MoveBehavior = scene.rexBoard.add.moveTo(this, {
             speed: 50,
             occupiedTest: true,
-            sneak: false
+            sneak: true
         })
 
         scene.anims.create({
@@ -509,7 +532,7 @@ class Bat extends Phaser.GameObjects.Sprite {
         this.MoveBehavior = scene.rexBoard.add.moveTo(this, {
             speed: 50,
             occupiedTest: true,
-            sneak: false
+            sneak: true
         })
 
         scene.anims.create({
@@ -579,7 +602,7 @@ class Block extends RexPlugins.Board.Shape {
         this.MoveBehavior = scene.rexBoard.add.moveTo(this, {
             speed: 300,
             occupiedTest: true,
-            sneak: false
+            sneak: true
         })
     }
 

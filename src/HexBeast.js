@@ -107,10 +107,8 @@ class HexBeast extends Phaser.Scene {
     allChessActOnce(hour) {
         if (hour % 3 === 0) {
             for (let i = 0; i < this.allChessOnBoard.length; i++) {
-                if (this.allChessOnBoard[i]._onBoard) {
-                    this.allChessOnBoard[i].testChessOccupiedAndAct(this.board, this.allChessOnBoard[i]._character._identity)
-                    // Activate skill when each move round start (3 hours)
-                }   
+                this.allChessOnBoard[i].testChessOccupiedAndAct(this.board)
+                // Activate skill when each move round start (3 hours)
             }
             for (let i = 0; i < this.allChessOnBoard.length; i++) {
                 this.allChessOnBoard[i].backToLastMoveIfOccupied(this.board)
