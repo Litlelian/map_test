@@ -93,8 +93,8 @@ class HexBeast extends Phaser.Scene {
 
         this.timer = setInterval(() => {
             this.hour++
-            this.clearDeadBeast(this.board)
             this.allChessActOnce(this.hour)
+            this.clearDeadBeast(this.board)
             // round timer : )
             document.getElementById("hex_board").setAttribute("stroke-dasharray", `${50 * (6 - this.hour % 6)} 300`)
             this.switchTimeAndGiveEnergy(this.hour)
@@ -106,6 +106,7 @@ class HexBeast extends Phaser.Scene {
 
     allChessActOnce(hour) {
         if (hour % 3 === 0) {
+            console.log(hour)
             for (let i = 0; i < this.allChessOnBoard.length; i++) {
                 this.allChessOnBoard[i].testChessOccupiedAndAct(this.board)
                 // Activate skill when each move round start (3 hours)

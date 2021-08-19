@@ -283,6 +283,7 @@ export default class Beast extends Phaser.GameObjects.Sprite {
             return true
         }
         else {
+            this._blockedByAllyChess = false
             this.moveforward(board)
             return true
         }
@@ -320,6 +321,7 @@ export default class Beast extends Phaser.GameObjects.Sprite {
     }
 
     moveback(board) {
+        // move back
         var moveDirection = 3
         if (this._character._identity === 1) { // ally
             moveDirection = 0
@@ -333,12 +335,14 @@ export default class Beast extends Phaser.GameObjects.Sprite {
             var blockSituation = board.chessToTileXYZ(this._blockArea[i])
             this._blockArea[i]._location = {x:blockSituation.x, y:blockSituation.y}
         }
-        for (let i = this._blockArea.length - 1; i >= 0; i--) { // infinite loop ??? problem
+        // call other
+        for (let i = this._blockArea.length - 1; i >= 0; i--) {
             var everyBlockOnIt = board.tileXYToChessArray(this._blockArea[i]._location.x, this._blockArea[i]._location.y)
             for (let j = 0; j < everyBlockOnIt.length; j++) {
                 if (everyBlockOnIt[j]._parent != this) {
                     everyBlockOnIt[j]._parent._blockedByAllyChess = false
                     everyBlockOnIt[j]._parent.moveback(board)
+                    break
                 }
             }
         }
@@ -411,7 +415,7 @@ class Rabbit extends Phaser.GameObjects.Sprite {
         if (occupiedChess._parent != board && occupiedChess._identity != this._identity) {
             occupiedChess._parent._character._life = occupiedChess._parent._character._life - this._attack
             if (occupiedChess._parent._character._life <= 0) {
-                board.scene.allChessOnBoard.splice(board.scene.allChessOnBoard.indexOf(occupiedChess._paren), 1)
+                board.scene.allChessOnBoard.splice(board.scene.allChessOnBoard.indexOf(occupiedChess._parent), 1)
                 occupiedChess._parent.killItself(board)
             }
             else {
@@ -488,7 +492,7 @@ class Chicken extends Phaser.GameObjects.Sprite {
         if (occupiedChess._parent != board && occupiedChess._identity != this._identity) {
             occupiedChess._parent._character._life = occupiedChess._parent._character._life - this._attack
             if (occupiedChess._parent._character._life <= 0) {
-                board.scene.allChessOnBoard.splice(board.scene.allChessOnBoard.indexOf(occupiedChess._paren), 1)
+                board.scene.allChessOnBoard.splice(board.scene.allChessOnBoard.indexOf(occupiedChess._parent), 1)
                 occupiedChess._parent.killItself(board)
             }
             else {
@@ -565,7 +569,7 @@ class Bat extends Phaser.GameObjects.Sprite {
         if (occupiedChess._parent != board && occupiedChess._identity != this._identity) {
             occupiedChess._parent._character._life = occupiedChess._parent._character._life - this._attack
             if (occupiedChess._parent._character._life <= 0) {
-                board.scene.allChessOnBoard.splice(board.scene.allChessOnBoard.indexOf(occupiedChess._paren), 1)
+                board.scene.allChessOnBoard.splice(board.scene.allChessOnBoard.indexOf(occupiedChess._parent), 1)
                 occupiedChess._parent.killItself(board)
             }
             else {
