@@ -54,6 +54,12 @@ class HexBeast extends Phaser.Scene {
         this.hour = 6 // 0:day 6:dusk 12:night 18:dawn, always start from dusk or dawn
         this.allyEnergy = 0
         this.enermyEnergy = 0
+        this.allyEnergyShow = this.add.text(700, 50, this.allyEnergy, {
+            fontSize: '40px'
+        })
+        this.enermyEnergyShow = this.add.text(50, 50, this.enermyEnergy, {
+            fontSize: '40px'
+        })
 
         if (Math.floor(Math.random()*2)) { // decide which timer go first
             this.hour = 6
@@ -93,8 +99,8 @@ class HexBeast extends Phaser.Scene {
 
         this.timer = setInterval(() => {
             this.hour++
-            this.allChessActOnce(this.hour)
             this.clearDeadBeast(this.board)
+            this.allChessActOnce(this.hour)
             // round timer : )
             document.getElementById("hex_board").setAttribute("stroke-dasharray", `${50 * (6 - this.hour % 6)} 300`)
             this.switchTimeAndGiveEnergy(this.hour)
@@ -102,11 +108,13 @@ class HexBeast extends Phaser.Scene {
     }
 
     update() {
+        this.allyEnergyShow.setText(this.allyEnergy)
+        this.enermyEnergyShow.setText(this.enermyEnergy)
     }
 
     allChessActOnce(hour) {
         if (hour % 3 === 0) {
-            console.log(hour)
+            console.log("<----------" + this.hour + "---------->")
             for (let i = 0; i < this.allChessOnBoard.length; i++) {
                 this.allChessOnBoard[i].testChessOccupiedAndAct(this.board)
                 // Activate skill when each move round start (3 hours)
@@ -122,6 +130,9 @@ class HexBeast extends Phaser.Scene {
             // switch round
             for(let i = 0; i < this.allyCrystal.length; i++) {
                 this.allyCrystal[i].addEnergy(this, hour)
+            }
+            for(let i = 0; i < this.enermyCrystal.length; i++) {
+                this.enermyCrystal[i].addEnergy(this, hour)
             }
             document.getElementById("hex_board").setAttribute("stroke-dasharray", `300 300`)
             document.getElementById("hex_board").setAttribute("stroke", TIME_ROUND_ORDER_COLOR[parseInt(hour / 6) % 4])

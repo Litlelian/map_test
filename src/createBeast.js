@@ -47,9 +47,10 @@ export default class Beast extends Phaser.GameObjects.Sprite {
         this.on('dragend', function(pointer, dragX, dragY){ 
             var tileXY = board.worldXYToTileXY(this.x, this.y)
             this._character.idleAnime()
-            if (this.testIfChessCanPut(board, tileXY)) {
+            if (this.testIfChessCanPut(board, tileXY) && this.testIfEnergyEnough(board)) {
                 this.drag.setEnable(false)
                 if (this._character._identity === 1) {
+                    scene.allyEnergy -= this._character._cost
                     scene.allyHand.splice(baseNumber, 1, new Beast(baseNumber, 1, board, scene.allyDeck.shift(), scene, {x:500 + baseNumber * 100, y:500}))
                     scene.allChessOnBoard.push(this)
                     this.createTerritory(board, tileXY)
@@ -57,6 +58,7 @@ export default class Beast extends Phaser.GameObjects.Sprite {
                     this._onBoard = true
                 }
                 else if (this._character._identity === -1) {
+                    scene.enermyEnergy -= this._character._cost
                     scene.enermyHand.splice(baseNumber, 1, new Beast(baseNumber, -1, board, scene.enermyDeck.shift(), scene, {x:100 + baseNumber * 100, y:500}))
                     scene.allChessOnBoard.push(this)
                     this.createTerritory(board, tileXY)
@@ -93,6 +95,25 @@ export default class Beast extends Phaser.GameObjects.Sprite {
         this._character.MoveBehavior.on('complete', function(moveTo, gameObject){
             this._character.idleAnime()
         }, this)
+    }
+
+    testIfEnergyEnough(board) {
+        if (this._character._identity === 1) {
+            if (board.scene.allyEnergy >= this._character._cost) {
+                return true
+            } 
+            else {
+                return false
+            }
+        }
+        else if (this._character._identity === -1) {
+            if (board.scene.enermyEnergy >= this._character._cost) {
+                return true
+            } 
+            else {
+                return false
+            }
+        }
     }
 
     createTerritory(board, tileXY) {// add blocks 
@@ -228,6 +249,9 @@ export default class Beast extends Phaser.GameObjects.Sprite {
         if (this.detectBoard()) {
             return false
         }
+        if(!this.habit(board)) {
+            return false
+        }
         this._enermy.length = 0
         var allyBlockChess = 0
         for (let i = 0; i < this._blockArea.length; i++) {
@@ -344,6 +368,26 @@ export default class Beast extends Phaser.GameObjects.Sprite {
                     everyBlockOnIt[j]._parent.moveback(board)
                     break
                 }
+            }
+        }
+    }
+
+    habit(board) {
+        var time = parseInt(board.scene.hour / 6) % 4
+        if (this._character._active === "day") {
+            if (time != 2) {
+                return true
+            }
+            else {
+                return false
+            }
+        }
+        else if (this._character._active === "night") {
+            if (time != 0) {
+                return true
+            }
+            else {
+                return false
             }
         }
     }
