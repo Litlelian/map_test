@@ -282,12 +282,6 @@ export default class Beast extends Phaser.GameObjects.Sprite {
             for (let i = 0; i < this._enermy.length; i++) {
                 if (this._enermy[i]._parent === board) { // Occupied by crystal
                     ifAttackCrystal ++
-                    if (this._character._identity === 1) {
-                        board.scene.enermyCrystal.splice(board.scene.enermyCrystal.indexOf(this._enermy[i]), 1)
-                    }
-                    else if (this._character._identity === -1) {
-                        board.scene.allyCrystal.splice(board.scene.enermyCrystal.indexOf(this._enermy[i]), 1)
-                    }
                     this._enermy[i].killItself(board)
                 }
                 else {
