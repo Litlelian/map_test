@@ -68,10 +68,8 @@ class HexBeast extends Phaser.Scene {
             this.hour = 18
         }
 
-        for (let i = 1; i < 6; i = i + 2) {
-            this.enermyCrystal.push(new Crystal(this.board, {x:0, y:i}, -1, -1))
-            this.allyCrystal.push(new Crystal(this.board, {x:8, y:i}, 1, 1))
-        }
+        this.allyCrystal.push(new Crystal(this.board, {x:8, y:1}, 1, 1), new Crystal(this.board, {x:8, y:3}, 1, -1), new Crystal(this.board, {x:8, y:5}, 1, 1))
+        this.enermyCrystal.push(new Crystal(this.board, {x:0, y:1}, -1, -1), new Crystal(this.board, {x:0, y:3}, -1, 1), new Crystal(this.board, {x:0, y:5}, -1, -1))
 
         for (let i = 0; i < 7; i = i + 2) {
             new Boundary(this.board, {x:0, y:i})
